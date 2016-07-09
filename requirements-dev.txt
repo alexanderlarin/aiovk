@@ -1,0 +1,2 @@
+-r requirements.txt
+aio.testing==0.1.0
