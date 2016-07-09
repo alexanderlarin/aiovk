@@ -1,8 +1,15 @@
 import unittest
 import aio.testing
-from src.authorisation import AuthSession
+import pyotp
+from src.authorisation import AuthSession, SimpleAuthSession
 from src.exceptions import VkAuthError, VkTwoFactorCodeNeeded, VkCaptchaNeeded
-from tests.test_auth_data import USER_LOGIN, USER_PASSWORD, APP_ID, USE_2FACTOR
+from tests.test_auth_data import USER_LOGIN, USER_PASSWORD, APP_ID, USE_2FACTOR, TWOFACTOR_CODE
+
+
+class TestAuthSession(AuthSession):
+    async def enter_confirmation_сode(self):
+        totp = pyotp.TOTP(TWOFACTOR_CODE)
+        return totp.now()
 
 
 class AuthSessionTestCase(unittest.TestCase):
@@ -27,6 +34,7 @@ class AuthSessionTestCase(unittest.TestCase):
             yield from s.authorize()
         s.close()
 
+    @unittest.skipIf(not USE_2FACTOR, "your account use 2factor auth")
     @aio.testing.run_until_complete
     def test_auth_with_2factor(self):
         s = AuthSession(login=USER_LOGIN, password=USER_PASSWORD, app_id=APP_ID)
@@ -34,15 +42,44 @@ class AuthSessionTestCase(unittest.TestCase):
             yield from s.authorize()
         s.close()
 
-    @unittest.skipIf(not USE_2FACTOR, "your account don't use 2factor auth")
+    @unittest.skipIf(USE_2FACTOR, "your account use 2factor auth")
     @aio.testing.run_until_complete
-    def test_auth_with_2factor(self):
+    def test_auth_without_2factor(self):
         s = AuthSession(login=USER_LOGIN, password=USER_PASSWORD, app_id=APP_ID)
-        with self.assertRaises(VkTwoFactorCodeNeeded):
-            yield from s.authorize()
+        token = yield from s.authorize()
         s.close()
+        self.assertIsNotNone(token)
 
-    @unittest.skipIf(USE_2FACTOR, "your account don't use 2factor auth")
+    @aio.testing.run_until_complete
+    def test_auth_one_text_scope(self):
+        s = TestAuthSession(login=USER_LOGIN, password=USER_PASSWORD, app_id=APP_ID, scope='notify')
+        token = yield from s.authorize()
+        s.close()
+        self.assertIsNotNone(token)
+
+    @aio.testing.run_until_complete
+    def test_auth_invalid_text_scope(self):
+        s = TestAuthSession(login=USER_LOGIN, password=USER_PASSWORD, app_id=APP_ID, scope='a')
+        token = yield from s.authorize()
+        s.close()
+        self.assertIsNotNone(token)
+
+    @aio.testing.run_until_complete
+    def test_auth_scopes_mask(self):
+        # 3 == notify + friends
+        s = TestAuthSession(login=USER_LOGIN, password=USER_PASSWORD, app_id=APP_ID, scope=3)
+        token = yield from s.authorize()
+        s.close()
+        self.assertIsNotNone(token)
+
+    @aio.testing.run_until_complete
+    def test_auth_list_of_scopes(self):
+        s = TestAuthSession(login=USER_LOGIN, password=USER_PASSWORD, app_id=APP_ID, scope=['notify', 'friends'])
+        token = yield from s.authorize()
+        s.close()
+        self.assertIsNotNone(token)
+
+    @unittest.skipIf(USE_2FACTOR, "your account use 2factor auth")
     @aio.testing.run_until_complete
     def test_auth_process_captcha_without_2factor(self):
         s = AuthSession(login=USER_LOGIN, password=USER_PASSWORD, app_id=APP_ID)
