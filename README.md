@@ -21,12 +21,12 @@ In all the examples below, I will give only the {code}
     >>> token
     asdfa2321afsdf12eadasf123
 
-With scopes
+With scopes:
 
-    ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, scope='notify')
-    ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, scope='notify,friends')
-    ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, scope=['notify', 'friends'])
-    ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, scope=3)  # notify and friends
+    ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, 'notify')
+    ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, 'notify,friends')
+    ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, ['notify', 'friends'])
+    ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, 3)  # notify and friends
 
 Also you can use `SimpleImplicitSession` for entering confirmation code
 or captcha key

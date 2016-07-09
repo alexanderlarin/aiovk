@@ -79,6 +79,13 @@ class AuthSessionTestCase(unittest.TestCase):
         s.close()
         self.assertIsNotNone(token)
 
+    @aio.testing.run_until_complete
+    def test_auth_string_of_scopes(self):
+        s = TestAuthSession(login=USER_LOGIN, password=USER_PASSWORD, app_id=APP_ID, scope='notify,friends')
+        token = yield from s.authorize()
+        s.close()
+        self.assertIsNotNone(token)
+
     @unittest.skipIf(TWOFACTOR_CODE, "your account use 2factor auth")
     @aio.testing.run_until_complete
     def test_auth_process_captcha_without_2factor(self):
