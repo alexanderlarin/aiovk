@@ -1,6 +1,5 @@
 import json
 import urllib.parse
-
 import aiohttp
 from src.exceptions import VkAuthError, VkCaptchaNeeded, VkTwoFactorCodeNeeded
 from src.parser import AuthPageParser, TwoFactorCodePageParser
@@ -18,7 +17,7 @@ class AuthSession:
         self.scope = scope
         self.session = aiohttp.ClientSession()
 
-    async def fetch(self, url, params):
+    async def get(self, url, params):
         with aiohttp.Timeout(self.timeout):
             response = await self.session.get(url, params=params)
             return response.status, await response.text()
@@ -49,6 +48,7 @@ class AuthSession:
         if q.path == '/blank.html':
             qs = dict(urllib.parse.parse_qsl(q.fragment))
             return qs['access_token']
+        return
 
     async def get_auth_page(self):
         params = {'client_id': self.app_id,
@@ -60,7 +60,7 @@ class AuthSession:
 
         if self.scope is not None:
             params['scope'] = self.scope
-        status, response = await self.fetch(self.AUTH_URL, params)
+        status, response = await self.get(self.AUTH_URL, params)
         if status != 200:
             error_dict = json.loads(response)
             raise VkAuthError(error_dict['error'], error_dict['error_description'], self.AUTH_URL, params)
@@ -112,4 +112,21 @@ class AuthSession:
         self.session.close()
 
 
+class SimpleAuthSession(AuthSession):
+    """
+    Simple implementation of processing captcha and 2factor authorisation
+    """
 
+    async def download_captcha(self, url):
+        with aiohttp.Timeout(self.timeout):
+            response = await self.session.get(url)
+            return await response.read()
+
+    async def enter_captcha(self, url, sid):
+        bytes = await self.download_captcha(url)
+        with open('captha.jpg', 'wb') as f:
+            f.write(bytes)
+        return input("Enter captcha: ")
+
+    async def enter_confirmation_сode(self):
+        return input('Enter confirmation сode: ')
