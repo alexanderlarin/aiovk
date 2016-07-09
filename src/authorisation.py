@@ -5,9 +5,10 @@ from src.exceptions import VkAuthError, VkCaptchaNeeded, VkTwoFactorCodeNeeded
 from src.parser import AuthPageParser, TwoFactorCodePageParser, AccessPageParser
 
 
-class AuthSession:
+class ImplicitSession:
     """
-    Implicit flow authorisation
+    For client authorisation in js apps and standalone (desktop and mobile) apps
+    See more in https://new.vk.com/dev/implicit_flow_user
     """
     AUTH_URL = 'https://oauth.vk.com/authorize'
     timeout = 10
@@ -130,7 +131,7 @@ class AuthSession:
         self.session.close()
 
 
-class SimpleAuthSession(AuthSession):
+class SimpleImplicitSession(ImplicitSession):
     """
     Simple implementation of processing captcha and 2factor authorisation
     """

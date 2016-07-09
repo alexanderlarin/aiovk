@@ -14,15 +14,19 @@ In all the examples below, I will give only the {code}
 
 
 # Authorisation
-    >>> as = AuthSession(USER_LOGIN, USER_PASSWORD, APP_ID)
+**ImplicitSession** - for client authorisation in js apps and standalone (desktop and mobile) apps
+
+    >>> as = ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID)
     >>> token = as.authorize()
     >>> token
     asdfa2321afsdf12eadasf123
-### With scopes
-    AuthSession(USER_LOGIN, USER_PASSWORD, APP_ID, scope='notify')
-    AuthSession(USER_LOGIN, USER_PASSWORD, APP_ID, scope='notify,friends')
-    AuthSession(USER_LOGIN, USER_PASSWORD, APP_ID, scope=['notify', 'friends'])
-    AuthSession(USER_LOGIN, USER_PASSWORD, APP_ID, scope=3)  # notify and friends
 
-Also you can use `SimpleAuthSession` for entering confirmation code
+With scopes
+
+    ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, scope='notify')
+    ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, scope='notify,friends')
+    ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, scope=['notify', 'friends'])
+    ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, scope=3)  # notify and friends
+
+Also you can use `SimpleImplicitSession` for entering confirmation code
 or captcha key
