@@ -1,4 +1,8 @@
 # Created by .ignore support plugin (hsz.mobi)
+### Project files
+# auth data
+/tests/test_auth_data.py
+
 ### Python template
 # Byte-compiled / optimized / DLL files
 __pycache__/
