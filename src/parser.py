@@ -67,3 +67,20 @@ class TwoFactorCodePageParser(html.parser.HTMLParser):
     def handle_data(self, data):
         if self.recording:
             self.message += data
+
+
+class AccessPageParser(html.parser.HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.inputs = []
+        self.url = ''
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'input':
+            attrs = dict(attrs)
+            if attrs['type'] != 'submit':
+                self.inputs.append((attrs['name'], attrs.get('value', '')))
+        elif tag == 'form':
+            for name, value in attrs:
+                if name == 'action':
+                    self.url = value

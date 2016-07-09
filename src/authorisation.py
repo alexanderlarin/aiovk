@@ -2,7 +2,7 @@ import json
 import urllib.parse
 import aiohttp
 from src.exceptions import VkAuthError, VkCaptchaNeeded, VkTwoFactorCodeNeeded
-from src.parser import AuthPageParser, TwoFactorCodePageParser
+from src.parser import AuthPageParser, TwoFactorCodePageParser, AccessPageParser
 
 
 class AuthSession:
@@ -17,7 +17,10 @@ class AuthSession:
         self.login = login
         self.password = password
         self.app_id = app_id
-        self.scope = scope
+        if isinstance(scope, (str, int, type(None))):
+            self.scope = scope
+        elif isinstance(scope, list):
+            self.scope = ",".join(scope)
         self.session = aiohttp.ClientSession()
 
     async def get(self, url, params):
@@ -39,7 +42,7 @@ class AuthSession:
         html = await self.get_auth_page()
         url, html = await self.process_auth_form(html)
         q = urllib.parse.urlparse(url)
-        if q.path == '/authorize':
+        if q.path == '/authorize':  # invalid login or password
             url, html = await self.process_auth_form(html)
             q = urllib.parse.urlparse(url)
         if q.path == '/login':
@@ -47,6 +50,9 @@ class AuthSession:
             q = urllib.parse.urlparse(url)
         if q.path == '/login':
             url, html = await self.process_2auth_form(html)
+            q = urllib.parse.urlparse(url)
+        if q.path == '/authorize':  # give rights for app
+            url, html = await self.process_access_form(html)
             q = urllib.parse.urlparse(url)
         if q.path == '/blank.html':
             qs = dict(urllib.parse.parse_qsl(q.fragment))
@@ -94,6 +100,15 @@ class AuthSession:
         if p.message:
             raise VkAuthError('invalid_data', p.message, form_url, form_data)
         form_data['code'] = await self.enter_confirmation_сode()
+        url, html = await self.post(form_url, form_data)
+        return url, html
+
+    async def process_access_form(self, html):
+        p = AccessPageParser()
+        p.feed(html)
+        p.close()
+        form_url = p.url
+        form_data = dict(p.inputs)
         url, html = await self.post(form_url, form_data)
         return url, html
 
