@@ -6,6 +6,9 @@ from src.parser import AuthPageParser, TwoFactorCodePageParser
 
 
 class AuthSession:
+    """
+    Implicit flow authorisation
+    """
     AUTH_URL = 'https://oauth.vk.com/authorize'
     timeout = 10
     API_VERSION = '5.52'
@@ -124,7 +127,7 @@ class SimpleAuthSession(AuthSession):
 
     async def enter_captcha(self, url, sid):
         bytes = await self.download_captcha(url)
-        with open('captha.jpg', 'wb') as f:
+        with open('captcha.jpg', 'wb') as f:
             f.write(bytes)
         return input("Enter captcha: ")
 

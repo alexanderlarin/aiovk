@@ -1,4 +1,3 @@
-import asyncio
 import unittest
 import aio.testing
 from src.authorisation import AuthSession
