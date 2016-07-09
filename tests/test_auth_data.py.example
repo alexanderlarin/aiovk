@@ -1,4 +1,5 @@
 USER_LOGIN = ''         # user email or phone number
 USER_PASSWORD = ''      # user password
 APP_ID = ''
-USE_2FACTOR = False      # do you use 2factor auth?
+USE_2FACTOR = False     # do you use 2factor auth?
+TWOFACTOR_CODE = ''     # code for Google Authenticator
