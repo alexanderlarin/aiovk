@@ -26,10 +26,12 @@ class TokenSession:
     async def send_api_request(self, method_name, params=None, timeout=None):
         if timeout is None:
             timeout = self.timeout
+        if params is None:
+            params = {}
         params['v'] = self.API_VERSION
         if self.access_token is not None:
             params['access_token'] = self.access_token
-        response = await self.json(self.REQUEST_URL + method_name, params or {}, timeout)
+        response = await self.json(self.REQUEST_URL + method_name, params, timeout)
         error = response.get('error')
         if error is not None:
             err_code = error.get('error_code')
