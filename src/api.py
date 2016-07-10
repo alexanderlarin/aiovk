@@ -1,25 +1,25 @@
-import logging
-import aiohttp
-
-logger = logging.getLogger('vk')
-
-
 class API:
-    API_URL = 'https://api.vk.com/method/'
-    API_VERSION = '5.52'
-    timeout = 10  # sec
+    def __init__(self, session):
+        self._session = session
 
-    def __init__(self, access_token=None):
-        self.access_token = access_token
-        headers = {'Accept': 'application/json',
-                   'Content-Type': 'application/x-www-form-urlencoded'}
-        self.session = aiohttp.ClientSession(headers=headers)
+    def __getattr__(self, method_name):
+        return Request(self, method_name)
 
-    async def send_request(self, method, kwargs):
-        response = await self.fetch(self.API_URL + method, kwargs)
-        a = 1
+    async def __call__(self, method_name, **method_kwargs):
+        return await getattr(self, method_name)(**method_kwargs)
 
-    async def fetch(self, url, params):
-        with aiohttp.Timeout(self.timeout):
-            async with self.session.get(url, params=params) as response:
-                return await response.json()
+
+class Request:
+    __slots__ = ('_api', '_method_name', '_method_args')
+
+    def __init__(self, api, method_name):
+        self._api = api
+        self._method_name = method_name
+
+    def __getattr__(self, method_name):
+        return Request(self._api, self._method_name + '.' + method_name)
+
+    async def __call__(self, **method_args):
+        timeout = method_args.pop('timeout', None)
+        self._method_args = method_args
+        return await self._api._session.make_request(self, timeout)
