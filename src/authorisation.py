@@ -1,8 +1,64 @@
 import json
 import urllib.parse
 import aiohttp
-from src.exceptions import VkAuthError, VkCaptchaNeeded, VkTwoFactorCodeNeeded
+from src.exceptions import VkAuthError, VkCaptchaNeeded, VkTwoFactorCodeNeeded, VkAPIError, CAPTCHA_IS_NEEDED, \
+    AUTHORIZATION_FAILED
 from src.parser import AuthPageParser, TwoFactorCodePageParser, AccessPageParser
+
+
+class TokenSession:
+    API_VERSION = '5.52'
+    REQUEST_URL = 'https://api.vk.com/method/'
+
+    def __init__(self, access_token=None, timeout=10):
+        self.timeout = timeout
+        self.access_token = access_token
+        self.session = aiohttp.ClientSession()
+
+    async def enter_captcha(self, url, sid):
+        """
+        Override this method for processing captcha.
+        :return captcha value
+        """
+        raise VkCaptchaNeeded(url, sid)
+
+    async def make_request(self, method_request):
+        params = method_request._method_args
+        return await self.send_api_request(method_request._method_name, params, method_request._api._timeout)
+
+    async def send_api_request(self, method_name, params=None, timeout=None):
+        if timeout is None:
+            timeout = self.timeout
+        params['v'] = self.API_VERSION
+        if self.access_token is not None:
+            params['access_token'] = self.access_token
+        response = await self.json(self.REQUEST_URL + method_name, params or {}, timeout)
+        error = response.get('error')
+        if error is not None:
+            err_code = error.get('error_code')
+            if err_code == CAPTCHA_IS_NEEDED:
+                captcha_sid = error.get('captcha_sid')
+                captcha_url = error.get('captcha_img')
+                params['captcha_key'] = await self.enter_captcha(captcha_url, captcha_sid)
+                params['captcha_sid'] = captcha_sid
+                response = await self.send_api_request(method_name, params, timeout)
+            elif err_code == AUTHORIZATION_FAILED:
+                await self.authorize()
+                response = await self.send_api_request(method_name, params, timeout)
+            else:
+                raise VkAPIError(error, self.REQUEST_URL + method_name)
+        return response['response']
+
+    async def json(self, url, params, timeout=None):
+        with aiohttp.Timeout(timeout or self.timeout):
+            async with self.session.get(url, params=params) as response:
+                return await response.json()
+
+    async def authorize(self):
+        raise VkAuthError('invalid_token', 'User authorization failed')
+
+    def close(self):
+        self.session.close()
 
 
 class ImplicitSession:
@@ -13,6 +69,7 @@ class ImplicitSession:
     AUTH_URL = 'https://oauth.vk.com/authorize'
     timeout = 10
     API_VERSION = '5.52'
+    access_token = None
 
     def __init__(self, login, password, app_id, scope=None):
         self.login = login
@@ -57,8 +114,7 @@ class ImplicitSession:
             q = urllib.parse.urlparse(url)
         if q.path == '/blank.html':
             qs = dict(urllib.parse.parse_qsl(q.fragment))
-            return qs['access_token']
-        return
+            self.access_token = qs['access_token']
 
     async def get_auth_page(self):
         params = {'client_id': self.app_id,
