@@ -15,16 +15,13 @@ class TokenSession:
         self.access_token = access_token
         self.session = aiohttp.ClientSession()
 
-    async def enter_captcha(self, url, sid):
-        """
-        Override this method for processing captcha.
-        :return captcha value
-        """
-        raise VkCaptchaNeeded(url, sid)
+    def close(self):
+        self.session.close()
 
-    async def make_request(self, method_request):
-        params = method_request._method_args
-        return await self.send_api_request(method_request._method_name, params, method_request._api._timeout)
+    async def json(self, url, params, timeout=None):
+        with aiohttp.Timeout(timeout or self.timeout):
+            async with self.session.get(url, params=params) as response:
+                return await response.json()
 
     async def send_api_request(self, method_name, params=None, timeout=None):
         if timeout is None:
@@ -49,29 +46,30 @@ class TokenSession:
                 raise VkAPIError(error, self.REQUEST_URL + method_name)
         return response['response']
 
-    async def json(self, url, params, timeout=None):
-        with aiohttp.Timeout(timeout or self.timeout):
-            async with self.session.get(url, params=params) as response:
-                return await response.json()
+    async def make_request(self, method_request):
+        params = method_request._method_args
+        return await self.send_api_request(method_request._method_name, params, method_request._api._timeout)
 
     async def authorize(self):
         raise VkAuthError('invalid_token', 'User authorization failed')
 
-    def close(self):
-        self.session.close()
+    async def enter_captcha(self, url, sid):
+        """
+        Override this method for processing captcha.
+        :return captcha value
+        """
+        raise VkCaptchaNeeded(url, sid)
 
 
-class ImplicitSession:
+class ImplicitSession(TokenSession):
     """
     For client authorisation in js apps and standalone (desktop and mobile) apps
     See more in https://new.vk.com/dev/implicit_flow_user
     """
     AUTH_URL = 'https://oauth.vk.com/authorize'
-    timeout = 10
-    API_VERSION = '5.52'
-    access_token = None
 
-    def __init__(self, login, password, app_id, scope=None):
+    def __init__(self, login, password, app_id, scope=None, timeout=10):
+        super().__init__(access_token=None, timeout=timeout)
         self.login = login
         self.password = password
         self.app_id = app_id
@@ -79,7 +77,6 @@ class ImplicitSession:
             self.scope = scope
         elif isinstance(scope, list):
             self.scope = ",".join(scope)
-        self.session = aiohttp.ClientSession()
 
     async def get(self, url, params):
         with aiohttp.Timeout(self.timeout):
@@ -169,22 +166,12 @@ class ImplicitSession:
         url, html = await self.post(form_url, form_data)
         return url, html
 
-    async def enter_captcha(self, url, sid):
-        """
-        Override this method for processing captcha.
-        :return captcha value
-        """
-        raise VkCaptchaNeeded(url, sid)
-
     async def enter_confirmation_сode(self):
         """
         Override this method for processing confirmation 2uth code.
         :return confirmation code
         """
         raise VkTwoFactorCodeNeeded()
-
-    def close(self):
-        self.session.close()
 
 
 class SimpleImplicitSession(ImplicitSession):
