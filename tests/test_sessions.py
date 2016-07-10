@@ -1,8 +1,8 @@
 import unittest
 import aio.testing
 import pyotp
-from src.sessions import ImplicitSession, TokenSession
-from src.exceptions import VkAuthError, VkTwoFactorCodeNeeded, VkCaptchaNeeded
+from aiovk import ImplicitSession, TokenSession
+from aiovk.exceptions import VkAuthError, VkTwoFactorCodeNeeded, VkCaptchaNeeded
 from tests.auth_data import USER_LOGIN, USER_PASSWORD, APP_ID, TWOFACTOR_CODE
 
 

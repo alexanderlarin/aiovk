@@ -1,5 +1,5 @@
 import urllib.parse
-from src.utils import get_request_params
+from aiovk.utils import get_request_params
 
 
 CAPTCHA_IS_NEEDED = 14

@@ -1,9 +1,9 @@
 import json
 import urllib.parse
 import aiohttp
-from src.exceptions import VkAuthError, VkCaptchaNeeded, VkTwoFactorCodeNeeded, VkAPIError, CAPTCHA_IS_NEEDED, \
+from aiovk.exceptions import VkAuthError, VkCaptchaNeeded, VkTwoFactorCodeNeeded, VkAPIError, CAPTCHA_IS_NEEDED, \
     AUTHORIZATION_FAILED
-from src.parser import AuthPageParser, TwoFactorCodePageParser, AccessPageParser
+from aiovk.parser import AuthPageParser, TwoFactorCodePageParser, AccessPageParser
 
 
 class TokenSession:

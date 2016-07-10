@@ -1,6 +1,7 @@
 import unittest
 import aio.testing
-from src.api import API, Request
+from aiovk import API
+from aiovk.api import Request
 
 
 class TestSession:
