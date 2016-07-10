@@ -23,6 +23,10 @@ class TokenSession:
             async with self.session.get(url, params=params) as response:
                 return await response.json()
 
+    async def make_request(self, method_request, timeout=None):
+        params = method_request._method_args
+        return await self.send_api_request(method_request._method_name, params, timeout)
+
     async def send_api_request(self, method_name, params=None, timeout=None):
         if timeout is None:
             timeout = self.timeout
@@ -47,10 +51,6 @@ class TokenSession:
             else:
                 raise VkAPIError(error, self.REQUEST_URL + method_name)
         return response['response']
-
-    async def make_request(self, method_request):
-        params = method_request._method_args
-        return await self.send_api_request(method_request._method_name, params, method_request._api._timeout)
 
     async def authorize(self):
         raise VkAuthError('invalid_token', 'User authorization failed')
