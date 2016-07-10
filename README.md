@@ -1,9 +1,15 @@
 # aiovk
-vk.com API python wrapper for asyncio  
-this module only for python 3.5!  
+vk.com API python wrapper for asyncio
 for old version of python you can use https://github.com/dimka665/vk
 
-# Annotation
+### Features
+* asynchronous
+* support only python 3.5
+* have one dependency `aiohttp`
+* support two-factor authentication
+
+# Examples
+### Annotation
 In all the examples below, I will give only the {code}
 
     async def func():
@@ -13,7 +19,7 @@ In all the examples below, I will give only the {code}
     loop.run_until_complete(func())
 
 
-# Authorisation
+### Authorisation
 **TokenSession** - if you already have token or you use requests which don't require token
 
     >>> session = TokenSession()
@@ -35,3 +41,20 @@ With scopes:
 
 Also you can use `SimpleImplicitSession` for entering confirmation code
 or captcha key
+
+### VK API
+First variant:
+
+    >>> session = TokenSession()
+    >>> api = API(session)
+    >>> await api.users.get(user_ids=1)
+    [{'first_name': 'Pavel', 'last_name': 'Durov', 'id': 1}]
+
+Second variant:
+
+    >>> session = TokenSession()
+    >>> api = API(session)
+    >>> await api('users.get', user_ids=1)
+    [{'first_name': 'Pavel', 'last_name': 'Durov', 'id': 1}]
+
+Also you can add `timeout` argument for each request or define it in the session
