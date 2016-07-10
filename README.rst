@@ -14,13 +14,13 @@ Install
 
 .. code-block:: bash
 
-    pip install vk
+    pip install aiovk
 
 Examples
 ========
 Annotation
 ----------
-In all the examples below, I will give only the {code}
+In all the examples below, I will give only the ``{code}``
 
 .. code-block:: python
 
