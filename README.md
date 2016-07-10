@@ -14,12 +14,17 @@ In all the examples below, I will give only the {code}
 
 
 # Authorisation
+**TokenSession** - if you already have token or you use requests which don't require token
+
+    >>> session = TokenSession()
+    >>> session = TokenSession(access_token='asdf123..')
+
 **ImplicitSession** - for client authorisation in js apps and standalone (desktop and mobile) apps
 
-    >>> as = ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID)
-    >>> token = as.authorize()
-    >>> token
-    asdfa2321afsdf12eadasf123
+    >>> session = ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID)
+    >>> await session.authorize()
+    >>> session.access_token
+    asdfa2321afsdf12eadasf123...
 
 With scopes:
 
