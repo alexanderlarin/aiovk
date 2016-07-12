@@ -82,3 +82,5 @@ Second variant:
     [{'first_name': 'Pavel', 'last_name': 'Durov', 'id': 1}]
 
 Also you can add ``timeout`` argument for each request or define it in the session
+
+See https://vk.com/dev/methods for detailed API guide.
