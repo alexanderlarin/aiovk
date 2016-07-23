@@ -62,6 +62,7 @@ Also you can use ``SimpleImplicitSession`` for entering confirmation code
 or captcha key
 
 **AuthorizationCodeSession** - authorisation for server apps or Open API
+
 See https://vk.com/dev/authcode_flow_user for getting the CODE
 
 .. code-block:: python
