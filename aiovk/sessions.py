@@ -194,3 +194,30 @@ class SimpleImplicitSession(ImplicitSession):
 
     async def enter_confirmation_сode(self):
         return input('Enter confirmation сode: ')
+
+
+class AuthorizationCodeSession(TokenSession):
+    CODE_URL = 'https://oauth.vk.com/access_token'
+
+    def __init__(self, app_id, app_secret, redirect_uri, code, timeout=10):
+        super().__init__(access_token=None, timeout=timeout)
+        self.code = code
+        self.app_id = app_id
+        self.app_secret = app_secret
+        self.redirect_uri = redirect_uri
+
+    async def authorize(self, code=None):
+        code = await self.get_code(code)
+        params = {
+            'client_id': self.app_id,
+            'client_secret': self.app_secret,
+            'redirect_uri': self.redirect_uri,
+            'code': code
+        }
+        response = await self.json(self.CODE_URL, params, self.timeout)
+        if 'error' in response:
+            raise VkAuthError(response['error'], response['error_description'], self.CODE_URL, params)
+        self.access_token = response['access_token']
+
+    async def get_code(self, code=None):
+        return code or self.code

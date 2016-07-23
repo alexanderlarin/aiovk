@@ -1,4 +1,4 @@
-from aiovk.sessions import ImplicitSession, TokenSession
+from aiovk.sessions import ImplicitSession, TokenSession, AuthorizationCodeSession
 from aiovk.api import API
 
-__version__ = "0.1"
+__version__ = "0.2"

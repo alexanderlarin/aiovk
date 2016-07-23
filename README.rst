@@ -40,7 +40,7 @@ Authorisation
     session = TokenSession()
     session = TokenSession(access_token='asdf123..')
 
-**ImplicitSession** - for client authorisation in js apps and standalone (desktop and mobile) apps
+**ImplicitSession** - client authorisation in js apps and standalone (desktop and mobile) apps
 
 .. code-block:: python
 
@@ -60,6 +60,25 @@ With scopes:
 
 Also you can use ``SimpleImplicitSession`` for entering confirmation code
 or captcha key
+
+**AuthorizationCodeSession** - authorisation for server apps or Open API
+See https://vk.com/dev/authcode_flow_user for getting the CODE
+
+.. code-block:: python
+
+    >>> session = AuthorizationCodeSession(APP_ID, APP_SECRET, REDIRECT_URI, CODE)
+    >>> await session.authorize()
+    >>> session.access_token
+    asdfa2321afsdf12eadasf123...
+
+Or:
+
+.. code-block:: python
+
+    >>> session = AuthorizationCodeSession(APP_ID, APP_SECRET, REDIRECT_URI)
+    >>> await session.authorize(CODE)
+    >>> session.access_token
+    asdfa2321afsdf12eadasf123...
 
 VK API
 ------

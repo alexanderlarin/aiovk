@@ -2,3 +2,10 @@ USER_LOGIN = ''         # user email or phone number
 USER_PASSWORD = ''      # user password
 APP_ID = ''
 TWOFACTOR_CODE = ''     # code for Google Authenticator or '' if you don't use 2factor auth
+
+# Authorization Code Flow
+REDIRECT_URI = ''       # If empty this test section will be skip
+APP_SECRET = ''
+CODE = ''               # update every testing!
+# Example of url for getting the CODE. Enter real data instead of APP_ID and REDIRECT_URI
+# https://oauth.vk.com/authorize?client_id=APP_ID&display=page&redirect_uri=REDIRECT_URI&response_type=code&v=5.53

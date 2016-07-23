@@ -1,9 +1,9 @@
 import unittest
 import aio.testing
 import pyotp
-from aiovk import ImplicitSession, TokenSession
+from aiovk import ImplicitSession, TokenSession, AuthorizationCodeSession
 from aiovk.exceptions import VkAuthError, VkTwoFactorCodeNeeded, VkCaptchaNeeded
-from tests.auth_data import USER_LOGIN, USER_PASSWORD, APP_ID, TWOFACTOR_CODE
+from tests.auth_data import USER_LOGIN, USER_PASSWORD, APP_ID, TWOFACTOR_CODE, REDIRECT_URI, APP_SECRET, CODE
 
 
 class TestAuthSession(ImplicitSession):
@@ -132,3 +132,20 @@ class ImplicitSessionTestCase(unittest.TestCase):
             with self.assertRaises(VkCaptchaNeeded):
                 yield from s.authorize()
         s.close()
+
+
+@unittest.skipIf(not REDIRECT_URI, 'you do not give me this value')
+class AuthorizationCodeSessionTestCase(unittest.TestCase):
+    @aio.testing.run_until_complete
+    def test_auth_with_empty_data(self):
+        s = AuthorizationCodeSession('', '', '', '')
+        with self.assertRaises(VkAuthError):
+            yield from s.authorize()
+        s.close()
+
+    @aio.testing.run_until_complete
+    def test_auth_with_valid_data(self):
+        s = AuthorizationCodeSession(APP_ID, APP_SECRET, REDIRECT_URI, CODE)
+        yield from s.authorize()
+        s.close()
+        self.assertIsNotNone(s.access_token)
