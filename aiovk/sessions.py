@@ -1,6 +1,7 @@
 import json
 import urllib.parse
-import aiohttp
+
+from aiovk.drivers import HttpDriver
 from aiovk.exceptions import VkAuthError, VkCaptchaNeeded, VkTwoFactorCodeNeeded, VkAPIError, CAPTCHA_IS_NEEDED, \
     AUTHORIZATION_FAILED
 from aiovk.parser import AuthPageParser, TwoFactorCodePageParser, AccessPageParser
@@ -10,18 +11,13 @@ class TokenSession:
     API_VERSION = '5.52'
     REQUEST_URL = 'https://api.vk.com/method/'
 
-    def __init__(self, access_token=None, timeout=10):
+    def __init__(self, access_token=None, timeout=10, driver=None):
         self.timeout = timeout
         self.access_token = access_token
-        self.session = aiohttp.ClientSession()
+        self.driver = HttpDriver(timeout) if driver is None else driver
 
     def close(self):
-        self.session.close()
-
-    async def json(self, url, params, timeout=None):
-        with aiohttp.Timeout(timeout or self.timeout):
-            async with self.session.get(url, params=params) as response:
-                return await response.json()
+        self.driver.close()
 
     async def make_request(self, method_request, timeout=None):
         params = method_request._method_args
@@ -35,7 +31,7 @@ class TokenSession:
         params['v'] = self.API_VERSION
         if self.access_token is not None:
             params['access_token'] = self.access_token
-        response = await self.json(self.REQUEST_URL + method_name, params, timeout)
+        response = await self.driver.json(self.REQUEST_URL + method_name, params, timeout)
         error = response.get('error')
         if error is not None:
             err_code = error.get('error_code')
@@ -70,8 +66,8 @@ class ImplicitSession(TokenSession):
     """
     AUTH_URL = 'https://oauth.vk.com/authorize'
 
-    def __init__(self, login, password, app_id, scope=None, timeout=10, num_of_attempts=5):
-        super().__init__(access_token=None, timeout=timeout)
+    def __init__(self, login, password, app_id, scope=None, timeout=10, num_of_attempts=5, driver=None):
+        super().__init__(access_token=None, timeout=timeout, driver=driver)
         self.login = login
         self.password = password
         self.app_id = app_id
@@ -80,16 +76,6 @@ class ImplicitSession(TokenSession):
             self.scope = scope
         elif isinstance(scope, list):
             self.scope = ",".join(scope)
-
-    async def get(self, url, params):
-        with aiohttp.Timeout(self.timeout):
-            response = await self.session.get(url, params=params)
-            return response.status, await response.text()
-
-    async def post(self, url, data):
-        with aiohttp.Timeout(self.timeout):
-            response = await self.session.post(url, data=data)
-            return response.url, await response.text()
 
     async def authorize(self):
         html = await self.get_auth_page()
@@ -120,7 +106,7 @@ class ImplicitSession(TokenSession):
 
         if self.scope is not None:
             params['scope'] = self.scope
-        status, response = await self.get(self.AUTH_URL, params)
+        status, response = await self.driver.get_text(self.AUTH_URL, params)
         if status != 200:
             error_dict = json.loads(response)
             raise VkAuthError(error_dict['error'], error_dict['error_description'], self.AUTH_URL, params)
@@ -138,7 +124,7 @@ class ImplicitSession(TokenSession):
             raise VkAuthError('invalid_data', p.message, form_url, form_data)
         elif p.captcha_url:
             form_data['captcha_key'] = await self.enter_captcha(p.captcha_url, form_data['captcha_sid'])
-        url, html = await self.post(form_url, form_data)
+        url, html = await self.driver.post_text(form_url, form_data)
         return url, html
 
     async def process_2auth_form(self, html):
@@ -151,7 +137,7 @@ class ImplicitSession(TokenSession):
         if p.message:
             raise VkAuthError('invalid_data', p.message, form_url, form_data)
         form_data['code'] = await self.enter_confirmation_сode()
-        url, html = await self.post(form_url, form_data)
+        url, html = await self.driver.post_text(form_url, form_data)
         return url, html
 
     async def process_access_form(self, html):
@@ -160,7 +146,7 @@ class ImplicitSession(TokenSession):
         p.close()
         form_url = p.url
         form_data = dict(p.inputs)
-        url, html = await self.post(form_url, form_data)
+        url, html = await self.driver.post_text(form_url, form_data)
         return url, html
 
     async def enter_confirmation_сode(self):
@@ -176,13 +162,8 @@ class SimpleImplicitSession(ImplicitSession):
     Simple implementation of processing captcha and 2factor authorisation
     """
 
-    async def download_captcha(self, url):
-        with aiohttp.Timeout(self.timeout):
-            response = await self.session.get(url)
-            return await response.read()
-
     async def enter_captcha(self, url, sid):
-        bytes = await self.download_captcha(url)
+        bytes = await self.driver.get_bin(url, {})
         with open('captcha.jpg', 'wb') as f:
             f.write(bytes)
         return input("Enter captcha: ")
@@ -194,12 +175,13 @@ class SimpleImplicitSession(ImplicitSession):
 class AuthorizationCodeSession(TokenSession):
     CODE_URL = 'https://oauth.vk.com/access_token'
 
-    def __init__(self, app_id, app_secret, redirect_uri, code, timeout=10):
+    def __init__(self, app_id, app_secret, redirect_uri, code, timeout=10, driver=None):
         super().__init__(access_token=None, timeout=timeout)
         self.code = code
         self.app_id = app_id
         self.app_secret = app_secret
         self.redirect_uri = redirect_uri
+        self.driver = HttpDriver(timeout) if driver is None else driver
 
     async def authorize(self, code=None):
         code = await self.get_code(code)
@@ -209,7 +191,7 @@ class AuthorizationCodeSession(TokenSession):
             'redirect_uri': self.redirect_uri,
             'code': code
         }
-        response = await self.json(self.CODE_URL, params, self.timeout)
+        response = await self.driver.json(self.CODE_URL, params, self.timeout)
         if 'error' in response:
             raise VkAuthError(response['error'], response['error_description'], self.CODE_URL, params)
         self.access_token = response['access_token']
