@@ -8,6 +8,7 @@ Features
 * support only python 3.5
 * have one dependency ``aiohttp``
 * support two-factor authentication
+* support socks proxy with ``aiosocks``
 
 Install
 -------
@@ -80,6 +81,30 @@ Or:
     >>> await session.authorize(CODE)
     >>> session.access_token
     asdfa2321afsdf12eadasf123...
+
+Drivers
+-------
+**HttpDriver** - default driver for using ``aiohttp``
+
+.. code-block:: python
+
+    >>> driver = HttpDriver()
+    >>> driver = HttpDriver(timeout=10)  # default timeout for all requests
+
+**Socks5Driver** - if you need a proxy
+required ``aiosocks``
+
+.. code-block:: python
+
+    >>> driver = Socks5Driver(PROXY_ADDRESS, PORT)  # 1234 is port
+    >>> driver = Socks5Driver(PROXY_ADDRESS, PORT, timeout=10)
+    >>> driver = Socks5Driver(PROXY_ADDRESS, PORT, PROXY_LOGIN, PROXY_PASSWORD, timeout=10)
+
+How to use custom driver with session:
+
+.. code-block:: python
+
+    >>> session = TokenSession(..., driver=HttpDriver())
 
 VK API
 ------
