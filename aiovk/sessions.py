@@ -70,11 +70,12 @@ class ImplicitSession(TokenSession):
     """
     AUTH_URL = 'https://oauth.vk.com/authorize'
 
-    def __init__(self, login, password, app_id, scope=None, timeout=10):
+    def __init__(self, login, password, app_id, scope=None, timeout=10, num_of_attempts=5):
         super().__init__(access_token=None, timeout=timeout)
         self.login = login
         self.password = password
         self.app_id = app_id
+        self.num_of_attempts = num_of_attempts
         if isinstance(scope, (str, int, type(None))):
             self.scope = scope
         elif isinstance(scope, list):
@@ -91,29 +92,23 @@ class ImplicitSession(TokenSession):
             return response.url, await response.text()
 
     async def authorize(self):
-        """
-        2 attempts for each step
-        :return: access token
-        """
-        # TODO: make several attempts for each step
         html = await self.get_auth_page()
-        url, html = await self.process_auth_form(html)
-        q = urllib.parse.urlparse(url)
-        if q.path == '/authorize':  # invalid login or password
-            url, html = await self.process_auth_form(html)
-            q = urllib.parse.urlparse(url)
-        if q.path == '/login':
-            url, html = await self.process_2auth_form(html)
-            q = urllib.parse.urlparse(url)
-        if q.path == '/login':
-            url, html = await self.process_2auth_form(html)
-            q = urllib.parse.urlparse(url)
-        if q.path == '/authorize':  # give rights for app
-            url, html = await self.process_access_form(html)
-            q = urllib.parse.urlparse(url)
-        if q.path == '/blank.html':
-            qs = dict(urllib.parse.parse_qsl(q.fragment))
-            self.access_token = qs['access_token']
+        q = urllib.parse.urlparse('/authorise?email')
+        for step in range(self.num_of_attempts):
+            if q.path == '/authorise'and 'email' in q.query:  # invalid login or password  and 'email' in q.query
+                url, html = await self.process_auth_form(html)
+                q = urllib.parse.urlparse(url)
+            if q.path == '/login':  # entering 2auth code
+                url, html = await self.process_2auth_form(html)
+                q = urllib.parse.urlparse(url)
+            if q.path == '/authorize' and '__q_hash' in q.query:  # give rights for app
+                url, html = await self.process_access_form(html)
+                q = urllib.parse.urlparse(url)
+            if q.path == '/blank.html':
+                qs = dict(urllib.parse.parse_qsl(q.fragment))
+                self.access_token = qs['access_token']
+                return
+        raise VkAuthError('Something went wrong', 'Exceeded the number of attempts to log in')
 
     async def get_auth_page(self):
         params = {'client_id': self.app_id,
