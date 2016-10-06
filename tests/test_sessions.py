@@ -40,7 +40,7 @@ class TokenSessionTestCase(unittest.TestCase):
         s = TokenSession()
         result = yield from s.send_api_request('users.get', {'user_ids': 1})
         s.close()
-        self.assertListEqual(result, [{'id': 1, 'last_name': 'Durov', 'first_name': 'Pavel'}])
+        self.assertListEqual(result, [{'id': 1, 'last_name': 'Дуров', 'first_name': 'Павел'}])
 
     @aio.testing.run_until_complete
     def test_auth_token_nonfree_request_without_token(self):
@@ -84,6 +84,13 @@ class ImplicitSessionTestCase(unittest.TestCase):
     @aio.testing.run_until_complete
     def test_auth_without_2factor(self):
         s = ImplicitSession(login=USER_LOGIN, password=USER_PASSWORD, app_id=APP_ID)
+        yield from s.authorize()
+        s.close()
+        self.assertIsNotNone(s.access_token)
+
+    @aio.testing.run_until_complete
+    def test_auth_without_scope(self):
+        s = TestAuthSession(login=USER_LOGIN, password=USER_PASSWORD, app_id=APP_ID)
         yield from s.authorize()
         s.close()
         self.assertIsNotNone(s.access_token)
@@ -139,6 +146,13 @@ class AuthorizationCodeSessionTestCase(unittest.TestCase):
     @aio.testing.run_until_complete
     def test_auth_with_empty_data(self):
         s = AuthorizationCodeSession('', '', '', '')
+        with self.assertRaises(VkAuthError):
+            yield from s.authorize()
+        s.close()
+
+    @aio.testing.run_until_complete
+    def test_auth_with_expired_code(self):
+        s = AuthorizationCodeSession(APP_ID, APP_SECRET, REDIRECT_URI, '')
         with self.assertRaises(VkAuthError):
             yield from s.authorize()
         s.close()
