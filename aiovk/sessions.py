@@ -79,9 +79,9 @@ class ImplicitSession(TokenSession):
 
     async def authorize(self):
         html = await self.get_auth_page()
-        q = urllib.parse.urlparse('/authorise?email')
+        q = urllib.parse.urlparse('/authorize?email')
         for step in range(self.num_of_attempts):
-            if q.path == '/authorise'and 'email' in q.query:  # invalid login or password  and 'email' in q.query
+            if q.path == '/authorize'and 'email' in q.query:  # invalid login or password  and 'email' in q.query
                 url, html = await self.process_auth_form(html)
                 q = urllib.parse.urlparse(url)
             if q.path == '/login':  # entering 2auth code
