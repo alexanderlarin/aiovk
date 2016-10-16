@@ -2,8 +2,12 @@ import json
 import unittest
 
 import aio.testing
+import time
 
-from aiovk.drivers import Socks5Driver, HttpDriver
+import math
+
+from aiovk.drivers import Socks5Driver, HttpDriver, BaseDriver
+from aiovk.mixins import LimitRateDriverMixin
 from tests.auth_data import ANON_SOCKS5_ADDRESS, ANON_SOCKS5_PORT, AUTH_SOCKS5_ADDRESS, AUTH_SOCKS5_PORT, \
     AUTH_SOCKS5_LOGIN, AUTH_SOCKS5_PASS
 
@@ -74,3 +78,40 @@ class SOCKS5DriverANONTestCase(TestMethodsMixin, unittest.TestCase):
 class SOCKS5DriverAUTHTestCase(TestMethodsMixin, unittest.TestCase):
     def get_driver(self):
         return Socks5Driver(AUTH_SOCKS5_ADDRESS, AUTH_SOCKS5_PORT, AUTH_SOCKS5_LOGIN, AUTH_SOCKS5_PASS)
+
+
+class LimitRateBaseTestDriver(BaseDriver):
+    async def json(self, *args, **kwargs):
+        return time.time()
+
+    def close(self):
+        pass
+
+
+class LimitRateTestDriver(LimitRateDriverMixin, LimitRateBaseTestDriver):
+    period = 1
+    requests_per_period = 1
+
+
+class LimitRateDriverMixinTestCase(unittest.TestCase):
+    period = 1
+    requests_per_period = 1
+
+    def get_driver(self):
+        return LimitRateTestDriver()
+
+    @aio.testing.run_until_complete
+    def test_json_fast(self):
+        driver = self.get_driver()
+        t0 = time.time()
+        t1 = yield from driver.json()
+        self.assertEqual(math.floor(t1 - t0), 0)
+        driver.close()
+
+    @aio.testing.run_until_complete
+    def test_json_slow(self):
+        driver = self.get_driver()
+        t1 = yield from driver.json()
+        t2 = yield from driver.json()
+        self.assertEqual(math.floor(t2 - t1), self.period)
+        driver.close()
