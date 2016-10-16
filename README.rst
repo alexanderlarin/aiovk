@@ -106,6 +106,15 @@ How to use custom driver with session:
 
     >>> session = TokenSession(..., driver=HttpDriver())
 
+
+**LimitRateDriverMixin** - mixin class what allow you create new drivers with speed rate limits
+
+.. code-block:: python
+
+    >>> class ExampleDriver(LimitRateDriverMixin, HttpDriver):
+    ...     requests_per_period = 3
+    ...     period = 1  #seconds
+
 VK API
 ------
 First variant:
