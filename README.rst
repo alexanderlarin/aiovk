@@ -43,8 +43,6 @@ Authorisation
 
 **ImplicitSession** - client authorisation in js apps and standalone (desktop and mobile) apps
 
-**Not working now!! It's aiohhtp problem see more here: https://github.com/Fahreeve/aiovk/issues/3#issuecomment-253847409**
-
 .. code-block:: python
 
     >>> session = ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID)

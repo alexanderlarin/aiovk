@@ -91,7 +91,7 @@ class ImplicitSession(TokenSession):
                 url, html = await self.process_access_form(html)
                 q = urllib.parse.urlparse(url)
             if q.path == '/blank.html':
-                qs = dict(urllib.parse.parse_qsl(q.fragment))
+                qs = dict(urllib.parse.parse_qsl(q.query))
                 self.access_token = qs['access_token']
                 return
         raise VkAuthError('Something went wrong', 'Exceeded the number of attempts to log in')
