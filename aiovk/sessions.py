@@ -24,16 +24,16 @@ class TokenSession:
         return await self.send_api_request(method_request._method_name, params, timeout)
 
     async def send_api_request(self, method_name, params=None, timeout=None):
-        if timeout is None:
+        if not timeout:
             timeout = self.timeout
-        if params is None:
+        if not params:
             params = {}
         params['v'] = self.API_VERSION
-        if self.access_token is not None:
+        if self.access_token:
             params['access_token'] = self.access_token
         response = await self.driver.json(self.REQUEST_URL + method_name, params, timeout)
         error = response.get('error')
-        if error is not None:
+        if error:
             err_code = error.get('error_code')
             if err_code == CAPTCHA_IS_NEEDED:
                 captcha_sid = error.get('captcha_sid')
@@ -104,7 +104,7 @@ class ImplicitSession(TokenSession):
                   'v': self.API_VERSION
                   }
 
-        if self.scope is not None:
+        if self.scope:
             params['scope'] = self.scope
         status, response = await self.driver.get_text(self.AUTH_URL, params)
         if status != 200:
