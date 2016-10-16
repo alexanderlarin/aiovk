@@ -10,7 +10,6 @@ class TaskQueue(asyncio.Queue):
         super()._init(maxsize)
         for i in range(maxsize):
             self._queue.append(1)
-        # asyncio.ensure_future(self.dispatcher(maxsize))
         self.task = asyncio.ensure_future(self.dispatcher(maxsize))
 
     async def dispatcher(self, maxsize):
@@ -21,8 +20,6 @@ class TaskQueue(asyncio.Queue):
 
     def canel(self):
         self.task.cancel()
-
-
 
 
 def wait_free_slot(func):
