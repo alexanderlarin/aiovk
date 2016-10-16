@@ -40,10 +40,10 @@ class TokenSession:
                 captcha_url = error.get('captcha_img')
                 params['captcha_key'] = await self.enter_captcha(captcha_url, captcha_sid)
                 params['captcha_sid'] = captcha_sid
-                response = await self.send_api_request(method_name, params, timeout)
+                return await self.send_api_request(method_name, params, timeout)
             elif err_code == AUTHORIZATION_FAILED:
                 await self.authorize()
-                response = await self.send_api_request(method_name, params, timeout)
+                return await self.send_api_request(method_name, params, timeout)
             else:
                 raise VkAPIError(error, self.REQUEST_URL + method_name)
         return response['response']
