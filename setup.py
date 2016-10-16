@@ -5,7 +5,7 @@ with open('README.rst', 'r') as f:
 
 setup(
     name='aiovk',
-    version='0.3.3',
+    version='0.4.0',
 
     author='Fahreev Eldar',
     author_email='fahreeve@yandex.ru',

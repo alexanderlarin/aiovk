@@ -9,6 +9,7 @@ Features
 * have only one dependency - ``aiohttp``
 * support two-factor authentication
 * support socks proxy with ``aiosocks``
+* support rate limit of requests
 
 Install
 -------
