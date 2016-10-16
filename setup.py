@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='aiovk',
-    version=__import__('aiovk').__version__,
+    version='0.3.2',
 
     author='Fahreev Eldar',
     author_email='fahreeve@yandex.ru',
