@@ -1,5 +1,8 @@
 from setuptools import setup, find_packages
 
+with open('README.rst', 'r') as f:
+    readme = f.read()
+
 setup(
     name='aiovk',
     version='0.3.2',
@@ -9,6 +12,7 @@ setup(
 
     url='https://github.com/Fahreeve/aiovk',
     description='vk.com API python wrapper for asyncio',
+    long_description=readme,
 
     packages=find_packages(),
     install_requires='aiohttp>=0.21',
