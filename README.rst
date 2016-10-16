@@ -5,8 +5,8 @@ for old version of python you can use https://github.com/dimka665/vk
 Features
 --------
 * asynchronous
-* support only python 3.5
-* have one dependency ``aiohttp``
+* support python 3.5+ versions
+* have only one dependency - ``aiohttp``
 * support two-factor authentication
 * support socks proxy with ``aiosocks``
 
@@ -32,7 +32,7 @@ In all the examples below, I will give only the ``{code}``
     loop.run_until_complete(func())
 
 
-Authorisation
+Authorization
 -------------
 **TokenSession** - if you already have token or you use requests which don't require token
 
@@ -41,7 +41,7 @@ Authorisation
     session = TokenSession()
     session = TokenSession(access_token='asdf123..')
 
-**ImplicitSession** - client authorisation in js apps and standalone (desktop and mobile) apps
+**ImplicitSession** - client authorization in js apps and standalone (desktop and mobile) apps
 
 .. code-block:: python
 
@@ -62,7 +62,7 @@ With scopes:
 Also you can use ``SimpleImplicitSession`` for entering confirmation code
 or captcha key
 
-**AuthorizationCodeSession** - authorisation for server apps or Open API
+**AuthorizationCodeSession** - authorization for server apps or Open API
 
 See https://vk.com/dev/authcode_flow_user for getting the CODE
 
