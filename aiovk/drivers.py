@@ -29,8 +29,9 @@ class CustomClientResponse(aiohttp.ClientResponse):
 
 
 class BaseDriver:
-    def __init__(self, timeout=10):
+    def __init__(self, timeout=10, loop=None):
         self.timeout = timeout
+        self._loop = loop
 
     async def json(self, url, params, timeout=None):
         '''
@@ -65,9 +66,10 @@ class BaseDriver:
 
 
 class HttpDriver(BaseDriver):
-    def __init__(self, timeout=10):
-        super().__init__(timeout)
-        self.session = aiohttp.ClientSession(response_class=CustomClientResponse)
+    def __init__(self, timeout=10, loop=None):
+        super().__init__(timeout, loop)
+        self.session = aiohttp.ClientSession(
+            response_class=CustomClientResponse, loop=loop)
 
     async def json(self, url, params, timeout=None):
         with aiohttp.Timeout(timeout or self.timeout):
@@ -94,7 +96,7 @@ class HttpDriver(BaseDriver):
 
 
 class Socks5Driver(HttpDriver):
-    def __init__(self, adress, port, login=None, password=None, timeout=10):
+    def __init__(self, adress, port, login=None, password=None, timeout=10, loop=None):
         super().__init__(timeout)
         self.close()
         addr = aiosocks.Socks5Addr(adress, port)
@@ -102,5 +104,5 @@ class Socks5Driver(HttpDriver):
             auth = aiosocks.Socks5Auth(login, password=password)
         else:
             auth = None
-        conn = SocksConnector(proxy=addr, proxy_auth=auth)
+        conn = SocksConnector(proxy=addr, proxy_auth=auth, loop=loop)
         self.session = aiohttp.ClientSession(connector=conn, response_class=CustomClientResponse)
