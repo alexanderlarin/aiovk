@@ -5,7 +5,7 @@ with open('README.rst', 'r') as f:
 
 setup(
     name='aiovk',
-    version='0.4.0',
+    version='0.5.0',
 
     author='Fahreev Eldar',
     author_email='fahreeve@yandex.ru',
@@ -23,6 +23,7 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords='vk.com api vk wrappper asyncio',
