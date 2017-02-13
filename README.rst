@@ -107,6 +107,14 @@ How to use custom driver with session:
 
     >>> session = TokenSession(..., driver=HttpDriver())
 
+How to use driver with own loop:
+
+.. code-block:: python
+
+    >>> loop = asyncio.get_event_loop()
+    >>> asyncio.set_event_loop(None)
+    >>> session = TokenSession(driver=HttpDriver(loop=loop))  # or Socks5Driver
+
 
 **LimitRateDriverMixin** - mixin class what allow you create new drivers with speed rate limits
 
