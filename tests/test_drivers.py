@@ -1,5 +1,8 @@
 import json
+import socket
 import unittest
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from threading import Thread
 
 import aio.testing
 import time
@@ -14,10 +17,51 @@ from tests.auth_data import ANON_SOCKS5_ADDRESS, ANON_SOCKS5_PORT, AUTH_SOCKS5_A
     AUTH_SOCKS5_LOGIN, AUTH_SOCKS5_PASS
 
 
+def get_free_port():
+    s = socket.socket(socket.AF_INET, type=socket.SOCK_STREAM)
+    s.bind(('localhost', 0))
+    address, port = s.getsockname()
+    s.close()
+    return port
+
+
+class MockServerRequestHandler(BaseHTTPRequestHandler):
+    json_filepath = "testdata.json"
+
+    def log_message(self, format, *args):
+        # Disable logging
+        return
+
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.end_headers()
+        with open(self.json_filepath) as f:
+            self.wfile.write(f.read().encode())
+
+    def do_POST(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write("OK".encode())
+
+
 class TestMethodsMixin(object):
-    json_url = "https://raw.githubusercontent.com/Fahreeve/aiovk/master/tests/testdata.json"
     json_filepath = "testdata.json"
     driver_kwargs = {}
+
+    @classmethod
+    def setUpClass(cls):
+        # Configure mock server.
+        cls.mock_server_port = get_free_port()
+        cls.mock_server = HTTPServer(('localhost', cls.mock_server_port), MockServerRequestHandler)
+
+        # Start running mock server in a separate thread.
+        # Daemon threads automatically shut down when the main process exits.
+        cls.mock_server_thread = Thread(target=cls.mock_server.serve_forever)
+        cls.mock_server_thread.setDaemon(True)
+        cls.mock_server_thread.start()
+
+        cls.json_url = 'http://localhost:{port}/'.format(port=cls.mock_server_port)
 
     async def json(self, loop=None):
         driver = self.driver_class(loop=loop, **self.driver_kwargs)
@@ -80,11 +124,11 @@ class TestMethodsMixin(object):
             "password": "test"
         }
         driver = self.driver_class(loop=loop, **self.driver_kwargs)
-        request_url = "https://github.com/session"
+        request_url = self.json_url
         url, text = await driver.post_text(request_url, data=data)
         driver.close()
         self.assertEqual(url, request_url)
-        self.assertEqual(text, 'Cookies must be enabled to use GitHub.')
+        self.assertEqual(text, 'OK')
 
     @aio.testing.run_until_complete
     def test_post_text_default_loop(self):
