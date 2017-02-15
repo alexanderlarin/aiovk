@@ -9,13 +9,3 @@ APP_SECRET = ''
 CODE = ''               # update every testing!
 # Example of url for getting the CODE. Enter real data instead of APP_ID and REDIRECT_URI
 # https://oauth.vk.com/authorize?client_id=APP_ID&display=page&redirect_uri=REDIRECT_URI&response_type=code&v=5.53
-
-# Socks5 settings
-# without autorisation
-ANON_SOCKS5_ADDRESS = ''  # If empty this test section will be skip
-ANON_SOCKS5_PORT = 0000
-# with authorization
-AUTH_SOCKS5_ADDRESS = ''  # If empty this test section will be skip
-AUTH_SOCKS5_PORT = 0000
-AUTH_SOCKS5_LOGIN = ''
-AUTH_SOCKS5_PASS = ''

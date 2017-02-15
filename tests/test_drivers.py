@@ -3,18 +3,15 @@ import socket
 import unittest
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from threading import Thread
-
+from unittest import mock
 import aio.testing
 import time
-
 import math
-
 import asyncio
-
+import aiosocks
+from aiohttp import TCPConnector
 from aiovk.drivers import Socks5Driver, HttpDriver, BaseDriver
 from aiovk.mixins import LimitRateDriverMixin
-from tests.auth_data import ANON_SOCKS5_ADDRESS, ANON_SOCKS5_PORT, AUTH_SOCKS5_ADDRESS, AUTH_SOCKS5_PORT, \
-    AUTH_SOCKS5_LOGIN, AUTH_SOCKS5_PASS
 
 
 def get_free_port():
@@ -144,25 +141,30 @@ class HttpDirverTestCase(TestMethodsMixin, unittest.TestCase):
     driver_class = HttpDriver
 
 
-@unittest.skipIf(not ANON_SOCKS5_ADDRESS or not ANON_SOCKS5_PORT, "you did't enter the anon socks5 data")
+class TestSocksConnector(TCPConnector):
+    def __init__(self, proxy, proxy_auth, loop):
+        super().__init__(loop=loop)
+        assert type(proxy) == aiosocks.Socks5Addr
+        assert type(proxy_auth) == aiosocks.Socks5Auth or proxy_auth is None
+
+
+@mock.patch('aiovk.drivers.Socks5Driver.connector', TestSocksConnector)
 class SOCKS5DriverANONTestCase(TestMethodsMixin, unittest.TestCase):
     driver_class = Socks5Driver
     driver_kwargs = {
-        "adress": ANON_SOCKS5_ADDRESS,
-        "port": ANON_SOCKS5_PORT
+        "adress": '127.0.0.1',
+        "port": get_free_port()
     }
 
 
-@unittest.skipIf(not AUTH_SOCKS5_ADDRESS or not AUTH_SOCKS5_PORT or
-                 not AUTH_SOCKS5_LOGIN or not AUTH_SOCKS5_PASS,
-                 "you did't enter the auth socks5 data")
+@mock.patch('aiovk.drivers.Socks5Driver.connector', TestSocksConnector)
 class SOCKS5DriverAUTHTestCase(TestMethodsMixin, unittest.TestCase):
     driver_class = Socks5Driver
     driver_kwargs = {
-        "adress": ANON_SOCKS5_ADDRESS,
-        "port": ANON_SOCKS5_PORT,
-        "login": AUTH_SOCKS5_LOGIN,
-        "password": AUTH_SOCKS5_PASS
+        "adress": '127.0.0.1',
+        "port": get_free_port(),
+        "login": 'test',
+        "password": 'test'
     }
 
 

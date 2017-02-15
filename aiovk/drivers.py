@@ -96,6 +96,8 @@ class HttpDriver(BaseDriver):
 
 
 class Socks5Driver(HttpDriver):
+    connector = SocksConnector
+
     def __init__(self, adress, port, login=None, password=None, timeout=10, loop=None):
         super().__init__(timeout)
         self.close()
@@ -104,5 +106,5 @@ class Socks5Driver(HttpDriver):
             auth = aiosocks.Socks5Auth(login, password=password)
         else:
             auth = None
-        conn = SocksConnector(proxy=addr, proxy_auth=auth, loop=loop)
+        conn = self.connector(proxy=addr, proxy_auth=auth, loop=loop)
         self.session = aiohttp.ClientSession(connector=conn, response_class=CustomClientResponse)
