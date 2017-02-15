@@ -4,8 +4,6 @@ APP_ID = ''
 TWOFACTOR_CODE = ''     # code for Google Authenticator or same app without spaces or '' if you don't use 2factor auth
 
 # Authorization Code Flow
-REDIRECT_URI = ''       # If empty this test section will be skip
+REDIRECT_URI = 'http://localhost:8000/'       # If empty this test section will be skip or only localhost
+REDIRECT_URI_PORT = 8000                      # need free port > 1000
 APP_SECRET = ''
-CODE = ''               # update every testing!
-# Example of url for getting the CODE. Enter real data instead of APP_ID and REDIRECT_URI
-# https://oauth.vk.com/authorize?client_id=APP_ID&display=page&redirect_uri=REDIRECT_URI&response_type=code&v=5.53

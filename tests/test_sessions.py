@@ -1,9 +1,17 @@
 import unittest
+from http.server import HTTPServer
+from threading import Thread
+from urllib.parse import urlparse, parse_qs
+
 import aio.testing
+import aiohttp
 import pyotp
 from aiovk import ImplicitSession, TokenSession, AuthorizationCodeSession
+from aiovk.drivers import HttpDriver, CustomClientResponse
 from aiovk.exceptions import VkAuthError, VkTwoFactorCodeNeeded, VkCaptchaNeeded
-from tests.auth_data import USER_LOGIN, USER_PASSWORD, APP_ID, TWOFACTOR_CODE, REDIRECT_URI, APP_SECRET, CODE
+from tests.auth_data import USER_LOGIN, USER_PASSWORD, APP_ID, TWOFACTOR_CODE, REDIRECT_URI, APP_SECRET, \
+    REDIRECT_URI_PORT
+from tests.test_drivers import get_free_port, MockServerRequestHandler
 
 
 class TestAuthSession(ImplicitSession):
@@ -143,6 +151,20 @@ class ImplicitSessionTestCase(unittest.TestCase):
 
 @unittest.skipIf(not REDIRECT_URI, 'you do not give me this value')
 class AuthorizationCodeSessionTestCase(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Configure mock server.
+        cls.mock_server_port = REDIRECT_URI_PORT
+        cls.mock_server = HTTPServer(('localhost', cls.mock_server_port), MockServerRequestHandler)
+
+        # Start running mock server in a separate thread.
+        # Daemon threads automatically shut down when the main process exits.
+        cls.mock_server_thread = Thread(target=cls.mock_server.serve_forever)
+        cls.mock_server_thread.setDaemon(True)
+        cls.mock_server_thread.start()
+
+        cls.json_url = 'http://localhost:{port}/'.format(port=cls.mock_server_port)
+
     @aio.testing.run_until_complete
     def test_auth_with_empty_data(self):
         s = AuthorizationCodeSession('', '', '', '')
@@ -159,7 +181,20 @@ class AuthorizationCodeSessionTestCase(unittest.TestCase):
 
     @aio.testing.run_until_complete
     def test_auth_with_valid_data(self):
-        s = AuthorizationCodeSession(APP_ID, APP_SECRET, REDIRECT_URI, CODE)
+        s = TestAuthSession(login=USER_LOGIN, password=USER_PASSWORD, app_id=APP_ID)
+        s.driver.session = aiohttp.ClientSession(connector=aiohttp.TCPConnector(verify_ssl=False),
+                                                 response_class=CustomClientResponse)
+        yield from s.authorize()
+        params = {'client_id': APP_ID, 'display': 'page', 'redirect_uri': REDIRECT_URI, 'response_type': 'code'}
+        with aiohttp.Timeout(10):
+            response = yield from s.driver.session.get("https://oauth.vk.com/authorize",
+                                                       params=params, allow_redirects=True)
+        s.close()
+        code = parse_qs(urlparse(response.url).query).get('code', None)
+        self.assertIsNotNone(code)
+        self.assertEqual(len(code), 1)
+
+        s = AuthorizationCodeSession(APP_ID, APP_SECRET, REDIRECT_URI, code[0])
         yield from s.authorize()
         s.close()
         self.assertIsNotNone(s.access_token)
