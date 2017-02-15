@@ -98,10 +98,10 @@ class HttpDriver(BaseDriver):
 class Socks5Driver(HttpDriver):
     connector = SocksConnector
 
-    def __init__(self, adress, port, login=None, password=None, timeout=10, loop=None):
+    def __init__(self, address, port, login=None, password=None, timeout=10, loop=None):
         super().__init__(timeout)
         self.close()
-        addr = aiosocks.Socks5Addr(adress, port)
+        addr = aiosocks.Socks5Addr(address, port)
         if login and password:
             auth = aiosocks.Socks5Auth(login, password=password)
         else:

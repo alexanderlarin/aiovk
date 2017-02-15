@@ -1,6 +1,6 @@
 import json
 import unittest
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import HTTPServer
 from threading import Thread
 from unittest import mock
 import aio.testing
@@ -124,7 +124,7 @@ class TestSocksConnector(TCPConnector):
 class SOCKS5DriverANONTestCase(TestMethodsMixin, unittest.TestCase):
     driver_class = Socks5Driver
     driver_kwargs = {
-        "adress": '127.0.0.1',
+        "address": '127.0.0.1',
         "port": get_free_port()
     }
 
@@ -133,7 +133,7 @@ class SOCKS5DriverANONTestCase(TestMethodsMixin, unittest.TestCase):
 class SOCKS5DriverAUTHTestCase(TestMethodsMixin, unittest.TestCase):
     driver_class = Socks5Driver
     driver_kwargs = {
-        "adress": '127.0.0.1',
+        "address": '127.0.0.1',
         "port": get_free_port(),
         "login": 'test',
         "password": 'test'
