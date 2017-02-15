@@ -7,11 +7,11 @@ import aio.testing
 import aiohttp
 import pyotp
 from aiovk import ImplicitSession, TokenSession, AuthorizationCodeSession
-from aiovk.drivers import HttpDriver, CustomClientResponse
+from aiovk.drivers import CustomClientResponse
 from aiovk.exceptions import VkAuthError, VkTwoFactorCodeNeeded, VkCaptchaNeeded
 from tests.auth_data import USER_LOGIN, USER_PASSWORD, APP_ID, TWOFACTOR_CODE, REDIRECT_URI, APP_SECRET, \
     REDIRECT_URI_PORT
-from tests.test_drivers import get_free_port, MockServerRequestHandler
+from tests.helpers import MockServerRequestHandler
 
 
 class TestAuthSession(ImplicitSession):
