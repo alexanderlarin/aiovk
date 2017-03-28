@@ -1,4 +1,5 @@
 import json
+import os
 import unittest
 from http.server import HTTPServer
 from threading import Thread
@@ -15,7 +16,7 @@ from tests.helpers import get_free_port, MockServerRequestHandler
 
 
 class TestMethodsMixin(object):
-    json_filepath = "testdata.json"
+    json_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "testdata.json")
     driver_kwargs = {}
 
     @classmethod

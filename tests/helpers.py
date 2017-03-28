@@ -1,3 +1,4 @@
+import os
 import socket
 from http.server import BaseHTTPRequestHandler
 
@@ -11,7 +12,7 @@ def get_free_port():
 
 
 class MockServerRequestHandler(BaseHTTPRequestHandler):
-    json_filepath = "testdata.json"
+    json_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "testdata.json")
 
     def log_message(self, format, *args):
         # Disable logging
