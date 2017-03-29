@@ -1,2 +1,2 @@
-aiohttp==1.0.3
+aiohttp==2.0.4
 chardet==2.3.0

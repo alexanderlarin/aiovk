@@ -93,7 +93,7 @@ Drivers
     >>> driver = HttpDriver(timeout=10)  # default timeout for all requests
 
 **Socks5Driver** - if you need a proxy
-required ``aiosocks``
+required ``aiosocks`` from https://github.com/panda73111/aiosocks
 
 .. code-block:: python
 
