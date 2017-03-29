@@ -5,7 +5,7 @@ with open('README.rst', 'r') as f:
 
 setup(
     name='aiovk',
-    version='0.5.1',
+    version='1.0.0',
 
     author='Fahreev Eldar',
     author_email='fahreeve@yandex.ru',
@@ -15,7 +15,7 @@ setup(
     long_description=readme,
 
     packages=find_packages(),
-    install_requires='aiohttp>=0.21',
+    install_requires='aiohttp>=2.0.4',
 
     license='MIT License',
     classifiers=[
