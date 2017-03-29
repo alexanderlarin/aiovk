@@ -10,6 +10,8 @@ import math
 import asyncio
 import aiosocks
 from aiohttp import TCPConnector
+from yarl import URL
+
 from aiovk.drivers import Socks5Driver, HttpDriver, BaseDriver
 from aiovk.mixins import LimitRateDriverMixin
 from tests.helpers import get_free_port, MockServerRequestHandler
@@ -97,7 +99,7 @@ class TestMethodsMixin(object):
         request_url = self.json_url
         url, text = await driver.post_text(request_url, data=data)
         driver.close()
-        self.assertEqual(url, request_url)
+        self.assertEqual(url, URL(request_url))
         self.assertEqual(text, 'OK')
 
     @aio.testing.run_until_complete
