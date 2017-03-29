@@ -60,7 +60,7 @@ With scopes:
     ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, ['notify', 'friends'])
     ImplicitSession(USER_LOGIN, USER_PASSWORD, APP_ID, 3)  # notify and friends
 
-Also you can use ``SimpleImplicitSession`` for entering confirmation code
+Also you can use ``SimpleImplicitSessionMixin`` for entering confirmation code
 or captcha key
 
 **AuthorizationCodeSession** - authorization for server apps or Open API

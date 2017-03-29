@@ -1,5 +1,4 @@
 import json
-import urllib.parse
 
 from yarl import URL
 
@@ -157,21 +156,6 @@ class ImplicitSession(TokenSession):
         :return confirmation code
         """
         raise VkTwoFactorCodeNeeded()
-
-
-class SimpleImplicitSession(ImplicitSession):
-    """
-    Simple implementation of processing captcha and 2factor authorisation
-    """
-
-    async def enter_captcha(self, url, sid):
-        bytes = await self.driver.get_bin(url, {})
-        with open('captcha.jpg', 'wb') as f:
-            f.write(bytes)
-        return input("Enter captcha: ")
-
-    async def enter_confirmation_сode(self):
-        return input('Enter confirmation сode: ')
 
 
 class AuthorizationCodeSession(TokenSession):
