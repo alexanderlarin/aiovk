@@ -22,7 +22,7 @@ class AuthPageParser(html.parser.HTMLParser):
                     self.url = value
         elif tag == 'img':
             attrs = dict(attrs)
-            if attrs.get('id', '') == 'captcha':
+            if attrs.get('class', '') == 'captcha_img':
                 self.captcha_url = attrs['src']
         elif tag == 'div':
             attrs = dict(attrs)

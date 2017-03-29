@@ -1,6 +1,8 @@
 import json
 import urllib.parse
 
+from yarl import URL
+
 from aiovk.drivers import HttpDriver
 from aiovk.exceptions import VkAuthError, VkCaptchaNeeded, VkTwoFactorCodeNeeded, VkAPIError, CAPTCHA_IS_NEEDED, \
     AUTHORIZATION_FAILED
@@ -79,20 +81,18 @@ class ImplicitSession(TokenSession):
 
     async def authorize(self):
         html = await self.get_auth_page()
-        q = urllib.parse.urlparse('/authorize?email')
+        url = URL('/authorize?email')
         for step in range(self.num_of_attempts):
-            if q.path == '/authorize'and 'email' in q.query:  # invalid login or password  and 'email' in q.query
+            if url.path == '/authorize' and 'email' in url.query:  # invalid login or password  and 'email' in q.query
                 url, html = await self.process_auth_form(html)
-                q = urllib.parse.urlparse(url)
-            if q.path == '/login':  # entering 2auth code
+            if url.path == '/login' and url.query.get('act', '') == 'authcheck':  # entering 2auth code
                 url, html = await self.process_2auth_form(html)
-                q = urllib.parse.urlparse(url)
-            if q.path == '/authorize' and '__q_hash' in q.query:  # give rights for app
+            if url.path == '/login' and url.query.get('act', '') == 'authcheck_code':  # need captcha
+               url, html = await self.process_auth_form(html)
+            if url.path == '/authorize' and '__q_hash' in url.query:  # give rights for app
                 url, html = await self.process_access_form(html)
-                q = urllib.parse.urlparse(url)
-            if q.path == '/blank.html':
-                qs = dict(urllib.parse.parse_qsl(q.query))
-                self.access_token = qs['access_token']
+            if url.path == '/blank.html':
+                self.access_token = url.query['access_token']
                 return
         raise VkAuthError('Something went wrong', 'Exceeded the number of attempts to log in')
 
@@ -123,7 +123,9 @@ class ImplicitSession(TokenSession):
         if p.message:
             raise VkAuthError('invalid_data', p.message, form_url, form_data)
         elif p.captcha_url:
-            form_data['captcha_key'] = await self.enter_captcha(p.captcha_url, form_data['captcha_sid'])
+            form_data['captcha_key'] = await self.enter_captcha("https://m.vk.com{}".format(p.captcha_url),
+                                                                form_data['captcha_sid'])
+            form_url = "https://m.vk.com{}".format(form_url)
         url, html = await self.driver.post_text(form_url, form_data)
         return url, html
 
