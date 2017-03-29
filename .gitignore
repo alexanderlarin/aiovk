@@ -2,6 +2,7 @@
 ### Project files
 # auth data
 /tests/auth_data.py
+/tests/captcha.jpg
 
 ### Python template
 # Byte-compiled / optimized / DLL files
