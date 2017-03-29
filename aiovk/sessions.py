@@ -9,7 +9,7 @@ from aiovk.parser import AuthPageParser, TwoFactorCodePageParser, AccessPagePars
 
 
 class TokenSession:
-    API_VERSION = '5.52'
+    API_VERSION = '5.63'
     REQUEST_URL = 'https://api.vk.com/method/'
 
     def __init__(self, access_token=None, timeout=10, driver=None):
