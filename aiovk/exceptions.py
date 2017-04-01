@@ -41,3 +41,13 @@ class VkAPIError(VkException):
         self.error_msg = error.get('error_msg')
         self.params = get_request_params(error.get('request_params'))
         self.url = url
+
+
+class VkLongPollError(VkException):
+    def __init__(self, error, description, url='', params=''):
+        self.error = error
+        self.description = description
+        self.url = "{}?{}".format(url, urllib.parse.urlencode(params))
+
+    def __str__(self):
+        return self.description

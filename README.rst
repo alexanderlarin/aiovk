@@ -10,6 +10,7 @@ Features
 * support two-factor authentication
 * support socks proxy with ``aiosocks``
 * support rate limit of requests
+* support Long Poll connection
 
 Install
 -------
@@ -147,3 +148,33 @@ Second variant:
 Also you can add ``timeout`` argument for each request or define it in the session
 
 See https://vk.com/dev/methods for detailed API guide.
+
+
+Long Poll
+---------
+Use exist API object
+
+.. code-block:: python
+
+    >>> api = API(session)
+    >>> lp = LongPoll(api, mode=2)  # default wait=25
+    >>> await lp.wait()
+    {"ts":1820350345,"updates":[...]}
+    >>> await lp.wait()
+    {"ts":1820351011,"updates":[...]}
+
+Use Session object
+
+.. code-block:: python
+
+    >>> lp = LongPoll(session, mode=2)  # default wait=25
+    >>> await lp.wait()
+    {"ts":1820350345,"updates":[...]}
+    >>> await lp.get_pts()  # return pts
+    191231223
+    >>> await lp.get_pts(need_ts=True)  # return pts, ts
+    191231223, 1820350345
+
+Notice that ``wait`` value only for long pool connection.
+Real wait pause could be more ``wait`` time because of need time
+for authorisation (if needed), reconnect and etc.

@@ -1,35 +1,16 @@
-import os
 import unittest
-import webbrowser
 from http.server import HTTPServer
 from threading import Thread
 
 import aio.testing
 import aiohttp
-import pyotp
 
 from aiovk import ImplicitSession, TokenSession, AuthorizationCodeSession
 from aiovk.drivers import CustomClientResponse
 from aiovk.exceptions import VkAuthError, VkTwoFactorCodeNeeded, VkCaptchaNeeded
 from tests.auth_data import USER_LOGIN, USER_PASSWORD, APP_ID, TWOFACTOR_CODE, REDIRECT_URI, APP_SECRET, \
     REDIRECT_URI_PORT
-from tests.helpers import MockServerRequestHandler
-
-
-class TestAuthSession(ImplicitSession):
-    async def enter_confirmation_сode(self):
-        totp = pyotp.TOTP(TWOFACTOR_CODE)
-        return totp.now()
-
-    async def enter_captcha(self, url, sid):
-        bytes = await self.driver.get_bin(url, {})
-        file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "captcha.jpg")
-        with open(file_path, 'wb') as f:
-            f.write(bytes)
-        webbrowser.open("file://{}".format(file_path))
-        code = input("Enter captcha: ")
-        os.remove(file_path)
-        return code
+from tests.helpers import MockServerRequestHandler, TestAuthSession
 
 
 class TokenSessionTestCase(unittest.TestCase):
