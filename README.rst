@@ -176,5 +176,6 @@ Use Session object
     191231223, 1820350345
 
 Notice that ``wait`` value only for long pool connection.
-Real wait pause could be more ``wait`` time because of need time
+
+Real pause could be more ``wait`` time because of need time
 for authorisation (if needed), reconnect and etc.
