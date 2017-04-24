@@ -5,7 +5,7 @@ from multidict import CIMultiDictProxy
 
 try:
     import aiosocks
-    from aiosocks.connector import SocksConnector
+    from aiosocks.connector import ProxyConnector
 except ImportError:
     pass
 
@@ -96,7 +96,7 @@ class HttpDriver(BaseDriver):
 
 
 class Socks5Driver(HttpDriver):
-    connector = SocksConnector
+    connector = ProxyConnector
 
     def __init__(self, address, port, login=None, password=None, timeout=10, loop=None):
         super().__init__(timeout)
