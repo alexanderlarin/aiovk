@@ -93,7 +93,6 @@ Drivers
     >>> driver = HttpDriver()
     >>> driver = HttpDriver(timeout=10)  # default timeout for all requests
 
-**Socks5Driver** - if you need a proxy, install ``aiosocks`` from pip
 .. code-block:: python
 
     >>> driver = Socks5Driver(PROXY_ADDRESS, PORT)  # 1234 is port
