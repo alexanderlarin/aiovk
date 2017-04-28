@@ -1,2 +1,12 @@
+aio.testing==0.1.0
 aiohttp==2.0.4
+aiosocks==0.2.2
+appdirs==1.4.3
+async-timeout==1.2.0
 chardet==2.3.0
+multidict==2.1.4
+packaging==16.8
+pyotp==2.2.4
+pyparsing==2.2.0
+six==1.10.0
+yarl==0.10.0
