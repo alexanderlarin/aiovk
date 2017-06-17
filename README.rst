@@ -84,6 +84,16 @@ Or:
     >>> session.access_token
     asdfa2321afsdf12eadasf123...
 
+**Authorization using context manager** - you won't need to use session.close() after work
+
+.. code-block:: python
+
+    async with aiovk.TokenSession(access_token=YOUR_VK_TOKEN) as ses:
+        api = API(ses)...
+
+And your session will be closed after all done or code fail(similar to simple "with" usage)
+Works with all types of authorization
+
 Drivers
 -------
 **HttpDriver** - default driver for using ``aiohttp``
