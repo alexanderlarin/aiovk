@@ -17,6 +17,14 @@ class TokenSession:
         self.access_token = access_token
         self.driver = HttpDriver(timeout) if driver is None else driver
 
+    def __aenter__(self):
+        """Make avaliable usage of "async with" context manager"""
+        return self
+
+    def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Closes session after usage of context manager with Session"""
+        return self.close()
+
     def close(self):
         self.driver.close()
 
