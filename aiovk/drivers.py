@@ -7,7 +7,7 @@ try:
     import aiosocks
     from aiosocks.connector import ProxyConnector
 except ImportError:
-    pass
+    ProxyConnector = None
 
 
 class CustomClientResponse(aiohttp.ClientResponse):
@@ -95,16 +95,17 @@ class HttpDriver(BaseDriver):
         self.session.close()
 
 
-class Socks5Driver(HttpDriver):
-    connector = ProxyConnector
+if ProxyConnector is not None:
+    class Socks5Driver(HttpDriver):
+        connector = ProxyConnector
 
-    def __init__(self, address, port, login=None, password=None, timeout=10, loop=None):
-        super().__init__(timeout)
-        self.close()
-        addr = aiosocks.Socks5Addr(address, port)
-        if login and password:
-            auth = aiosocks.Socks5Auth(login, password=password)
-        else:
-            auth = None
-        conn = self.connector(proxy=addr, proxy_auth=auth, loop=loop)
-        self.session = aiohttp.ClientSession(connector=conn, response_class=CustomClientResponse)
+        def __init__(self, address, port, login=None, password=None, timeout=10, loop=None):
+            super().__init__(timeout)
+            self.close()
+            addr = aiosocks.Socks5Addr(address, port)
+            if login and password:
+                auth = aiosocks.Socks5Auth(login, password=password)
+            else:
+                auth = None
+            conn = self.connector(proxy=addr, proxy_auth=auth, loop=loop)
+            self.session = aiohttp.ClientSession(connector=conn, response_class=CustomClientResponse)
