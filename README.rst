@@ -123,6 +123,16 @@ How to use driver with own loop:
     >>> asyncio.set_event_loop(None)
     >>> session = TokenSession(driver=HttpDriver(loop=loop))  # or Socks5Driver
 
+How to use driver with custom http session object:
+
+Solve next problem: https://stackoverflow.com/questions/29827642/asynchronous-aiohttp-requests-fails-but-synchronous-requests-succeed
+
+.. code-block:: python
+
+    >>> connector = aiohttp.TCPConnector(verify_ssl=False)
+    >>> session = aiohttp.ClientSession(connector=connector)
+    >>> driver = HttpDriver(loop=loop, session=session)
+
 
 **LimitRateDriverMixin** - mixin class what allow you create new drivers with speed rate limits
 
