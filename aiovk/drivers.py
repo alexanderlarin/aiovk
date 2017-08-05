@@ -66,10 +66,13 @@ class BaseDriver:
 
 
 class HttpDriver(BaseDriver):
-    def __init__(self, timeout=10, loop=None):
+    def __init__(self, timeout=10, loop=None, session=None):
         super().__init__(timeout, loop)
-        self.session = aiohttp.ClientSession(
-            response_class=CustomClientResponse, loop=loop)
+        if not session:
+            self.session = aiohttp.ClientSession(
+                response_class=CustomClientResponse, loop=loop)
+        else:
+            self.session = session
 
     async def json(self, url, params, timeout=None):
         with aiohttp.Timeout(timeout or self.timeout):
