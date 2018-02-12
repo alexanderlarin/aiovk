@@ -75,23 +75,20 @@ class HttpDriver(BaseDriver):
             self.session = session
 
     async def json(self, url, params, timeout=None):
-        with aiohttp.Timeout(timeout or self.timeout):
-            async with self.session.get(url, params=params) as response:
-                return await response.json()
+        # timeouts - https://docs.aiohttp.org/en/v3.0.0/client_quickstart.html#timeouts
+        async with self.session.get(url, params=params, timeout=timeout or self.timeout) as response:
+            return await response.json()
 
     async def get_text(self, url, params, timeout=None):
-        with aiohttp.Timeout(timeout or self.timeout):
-            response = await self.session.get(url, params=params)
+        async with self.session.get(url, params=params, timeout=timeout or self.timeout) as response:
             return response.status, await response.text()
 
     async def get_bin(self, url, params, timeout=None):
-        with aiohttp.Timeout(timeout or self.timeout):
-            response = await self.session.get(url, params=params)
+        async with self.session.get(url, params=params, timeout=timeout or self.timeout) as response:
             return await response.read()
 
     async def post_text(self, url, data, timeout=None):
-        with aiohttp.Timeout(timeout or self.timeout):
-            response = await self.session.post(url, data=data)
+        async with self.session.post(url, data=data, timeout=timeout or self.timeout) as response:
             return response.url, await response.text()
 
     def close(self):
