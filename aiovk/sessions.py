@@ -23,10 +23,10 @@ class TokenSession:
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Closes session after usage of context manager with Session"""
-        return self.close()
+        return await self.close()
 
-    def close(self):
-        self.driver.close()
+    async def close(self):
+        await self.driver.close()
 
     async def make_request(self, method_request, timeout=None):
         params = method_request._method_args
