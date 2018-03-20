@@ -1,5 +1,6 @@
 import aiohttp
 from aiohttp import hdrs
+import async_timeout
 from multidict import CIMultiDict
 from multidict import CIMultiDictProxy
 
@@ -61,7 +62,7 @@ class BaseDriver:
         '''
         raise NotImplementedError
 
-    def close(self):
+    async def close(self):
         raise NotImplementedError
 
 
@@ -75,27 +76,27 @@ class HttpDriver(BaseDriver):
             self.session = session
 
     async def json(self, url, params, timeout=None):
-        with aiohttp.Timeout(timeout or self.timeout):
+        with async_timeout.timeout(timeout or self.timeout):
             async with self.session.get(url, params=params) as response:
                 return await response.json()
 
     async def get_text(self, url, params, timeout=None):
-        with aiohttp.Timeout(timeout or self.timeout):
+        with async_timeout.timeout(timeout or self.timeout):
             response = await self.session.get(url, params=params)
             return response.status, await response.text()
 
     async def get_bin(self, url, params, timeout=None):
-        with aiohttp.Timeout(timeout or self.timeout):
+        with async_timeout.timeout(timeout or self.timeout):
             response = await self.session.get(url, params=params)
             return await response.read()
 
     async def post_text(self, url, data, timeout=None):
-        with aiohttp.Timeout(timeout or self.timeout):
+        with async_timeout.timeout(timeout or self.timeout):
             response = await self.session.post(url, data=data)
             return response.url, await response.text()
 
-    def close(self):
-        self.session.close()
+    async def close(self):
+        await self.session.close()
 
 
 if ProxyConnector is not None:

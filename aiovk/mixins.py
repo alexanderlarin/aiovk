@@ -25,8 +25,8 @@ class LimitRateDriverMixin:
     async def post_text(self, *args, **kwargs):
         return await super().post_text(*args, **kwargs)
 
-    def close(self):
-        super().close()
+    async def close(self):
+        await super().close()
         self._queue.canel()
 
 
