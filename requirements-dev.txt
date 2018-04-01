@@ -1,4 +1,4 @@
 -r requirements.txt
 aio.testing==0.1.0
-pyotp==2.2.4
-git+https://github.com/panda73111/aiosocks
+aiounittest-1.1.0
+pyotp==2.2.6

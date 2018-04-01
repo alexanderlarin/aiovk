@@ -9,6 +9,7 @@ import time
 import math
 import asyncio
 import aiosocks
+import aiounittest
 from aiohttp import TCPConnector
 from yarl import URL
 
@@ -17,7 +18,8 @@ from aiovk.mixins import LimitRateDriverMixin
 from tests.helpers import get_free_port, MockServerRequestHandler
 
 
-class TestMethodsMixin(object):
+class TestMethodsMixin:
+    driver_class = None
     json_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "testdata.json")
     driver_kwargs = {}
 
@@ -44,14 +46,12 @@ class TestMethodsMixin(object):
             original = json.load(f)
         self.assertDictEqual(jsn, original)
 
-    @aio.testing.run_until_complete
-    def test_json_default_loop(self):
-        yield from self.json()
+    async def test_json_default_loop(self):
+        await self.json()
 
-    @aio.testing.run_until_complete
-    def test_json_custom_loop(self):
+    async def test_json_custom_loop(self):
         loop = asyncio.get_event_loop()
-        yield from self.json(loop)
+        await self.json(loop)
 
     async def get_text(self, loop=None):
         driver = self.driver_class(loop=loop, **self.driver_kwargs)
@@ -63,14 +63,12 @@ class TestMethodsMixin(object):
             original = f.read()
         self.assertEqual(text, original)
 
-    @aio.testing.run_until_complete
-    def test_get_text_default_loop(self):
-        yield from self.get_text()
+    async def test_get_text_default_loop(self):
+        await self.get_text()
 
-    @aio.testing.run_until_complete
-    def test_get_text_custom_loop(self):
+    async def test_get_text_custom_loop(self):
         loop = asyncio.get_event_loop()
-        yield from self.get_text(loop)
+        await self.get_text(loop)
 
     async def get_bin(self, loop=None):
         driver = self.driver_class(loop=loop, **self.driver_kwargs)
@@ -81,14 +79,12 @@ class TestMethodsMixin(object):
             original = f.read()
         self.assertEqual(text, original)
 
-    @aio.testing.run_until_complete
-    def test_get_bin_default_loop(self):
-        yield from self.get_bin()
+    async def test_get_bin_default_loop(self):
+        await self.get_bin()
 
-    @aio.testing.run_until_complete
-    def test_get_bin_custom_loop(self):
+    async def test_get_bin_custom_loop(self):
         loop = asyncio.get_event_loop()
-        yield from self.get_bin(loop)
+        await self.get_bin(loop)
 
     async def post_text(self, loop=None):
         data = {
@@ -102,17 +98,15 @@ class TestMethodsMixin(object):
         self.assertEqual(url, URL(request_url))
         self.assertEqual(text, 'OK')
 
-    @aio.testing.run_until_complete
-    def test_post_text_default_loop(self):
-        yield from self.post_text()
+    async def test_post_text_default_loop(self):
+        await self.post_text()
 
-    @aio.testing.run_until_complete
-    def test_post_text_custom_loop(self):
+    async def test_post_text_custom_loop(self):
         loop = asyncio.get_event_loop()
-        yield from self.post_text(loop)
+        await self.post_text(loop)
 
 
-class HttpDirverTestCase(TestMethodsMixin, unittest.TestCase):
+class HttpDirverTestCase(TestMethodsMixin, aiounittest.AsyncTestCase):
     driver_class = HttpDriver
 
 
@@ -124,7 +118,7 @@ class TestSocksConnector(TCPConnector):
 
 
 @mock.patch('aiovk.drivers.Socks5Driver.connector', TestSocksConnector)
-class SOCKS5DriverANONTestCase(TestMethodsMixin, unittest.TestCase):
+class SOCKS5DriverANONTestCase(TestMethodsMixin, aiounittest.AsyncTestCase):
     driver_class = Socks5Driver
     driver_kwargs = {
         "address": '127.0.0.1',
@@ -133,7 +127,7 @@ class SOCKS5DriverANONTestCase(TestMethodsMixin, unittest.TestCase):
 
 
 @mock.patch('aiovk.drivers.Socks5Driver.connector', TestSocksConnector)
-class SOCKS5DriverAUTHTestCase(TestMethodsMixin, unittest.TestCase):
+class SOCKS5DriverAUTHTestCase(TestMethodsMixin, aiounittest.AsyncTestCase):
     driver_class = Socks5Driver
     driver_kwargs = {
         "address": '127.0.0.1',
@@ -156,25 +150,23 @@ class LimitRateTestDriver(LimitRateDriverMixin, LimitRateBaseTestDriver):
     requests_per_period = 1
 
 
-class LimitRateDriverMixinTestCase(unittest.TestCase):
+class LimitRateDriverMixinTestCase(aiounittest.AsyncTestCase):
     period = 1
     requests_per_period = 1
 
     def get_driver(self):
         return LimitRateTestDriver()
 
-    @aio.testing.run_until_complete
-    def test_json_fast(self):
+    async def test_json_fast(self):
         driver = self.get_driver()
         t0 = time.time()
-        t1 = yield from driver.json()
+        t1 = await driver.json()
         self.assertEqual(math.floor(t1 - t0), 0)
         driver.close()
 
-    @aio.testing.run_until_complete
-    def test_json_slow(self):
+    async def test_json_slow(self):
         driver = self.get_driver()
-        t1 = yield from driver.json()
-        t2 = yield from driver.json()
+        t1 = await driver.json()
+        t2 = await driver.json()
         self.assertEqual(math.floor(t2 - t1), self.period)
         driver.close()

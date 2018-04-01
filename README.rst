@@ -166,6 +166,19 @@ Also you can add ``timeout`` argument for each request or define it in the sessi
 
 See https://vk.com/dev/methods for detailed API guide.
 
+Lazy VK API
+-----------
+It is useful when a bot has a large message flow
+
+.. code-block:: python
+
+    >>> session = TokenSession()
+    >>> api = LazyAPI(session)
+    >>> message = api.users.get(user_ids=1)
+    >>> await message()
+    [{'first_name': 'Pavel', 'last_name': 'Durov', 'id': 1}]
+
+Supports both variants like API object
 
 Long Poll
 ---------
