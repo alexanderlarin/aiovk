@@ -61,7 +61,7 @@ class BaseDriver:
         '''
         raise NotImplementedError
 
-    def close(self):
+    async def close(self):
         raise NotImplementedError
 
 
@@ -91,8 +91,8 @@ class HttpDriver(BaseDriver):
         async with self.session.post(url, data=data, timeout=timeout or self.timeout) as response:
             return response.url, await response.text()
 
-    def close(self):
-        self.session.close()
+    async def close(self):
+        await self.session.close()
 
 
 if ProxyConnector is not None:

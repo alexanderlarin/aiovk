@@ -18,9 +18,9 @@ class BaseSession(ABC):
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Closes session after usage of context manager with Session"""
-        self.close()
+        await self.close()
 
-    def close(self) -> None:
+    async def close(self) -> None:
         """Perform the actions associated with the completion of the current session"""
 
     @abstractmethod
