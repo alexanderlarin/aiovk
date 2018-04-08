@@ -27,7 +27,7 @@ setup(
     long_description=readme,
 
     packages=find_packages(),
-    install_requires='aiohttp>=2.0.4',
+    install_requires='aiohttp>=2.3.10',
 
     license='MIT License',
     classifiers=[
