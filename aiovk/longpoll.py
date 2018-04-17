@@ -32,7 +32,7 @@ class LongPoll:
         self.base_url = 'https://{}'.format(response['server'])
 
     async def wait(self, need_pts=False):
-        if self.base_url is None:
+        if not self.base_url:
             await self._get_long_poll_server(need_pts)
         params = {
             'ts': self.ts,
@@ -40,7 +40,7 @@ class LongPoll:
         }
         params.update(self.base_params)
         # invalid mymetype from server
-        code, response = await self.api._session.driver.get_text(self.base_url, params, timeout=2*self.base_params['wait'])
+        code, response = await self.api._session.driver.get_text(self.base_url, params, timeout=2 * self.base_params['wait'])
         if code == 403:
             raise VkLongPollError(403,
                                   'smth weth wrong',
@@ -49,7 +49,7 @@ class LongPoll:
                                   )
         response = json.loads(response)
         failed = response.get('failed')
-        if failed is None:
+        if not failed:
             self.ts = response['ts']
             return response
         if failed == 1:
@@ -64,7 +64,7 @@ class LongPoll:
         return await self.wait()
 
     async def get_pts(self, need_ts=False):
-        if self.base_url is None or self.pts is None:
+        if not self.base_url or not self.pts:
             await self._get_long_poll_server(need_pts=True)
         if need_ts:
             return self.pts, self.ts

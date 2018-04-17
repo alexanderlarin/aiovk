@@ -3,7 +3,7 @@ from aiovk.utils import TaskQueue, wait_free_slot
 
 class LimitRateDriverMixin:
     requests_per_period = 3
-    period = 1  #seconds
+    period = 1  # seconds
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -32,7 +32,7 @@ class LimitRateDriverMixin:
 
 class SimpleImplicitSessionMixin:
     """
-    Simple implementation of processing captcha and 2factor authorisation
+    Simple implementation of processing captcha and 2factor authorization
     """
 
     async def enter_captcha(self, url, sid):

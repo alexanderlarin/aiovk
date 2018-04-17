@@ -63,7 +63,7 @@ class WaitFreeSlotTestCase(unittest.TestCase):
         obj._queue = q
 
         yield from foo(obj)
-        self.assertEqual(q.qsize(), size-1)
+        self.assertEqual(q.qsize(), size - 1)
         q.canel()
 
     @aio.testing.run_until_complete

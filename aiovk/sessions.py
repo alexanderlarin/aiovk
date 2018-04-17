@@ -38,7 +38,7 @@ class BaseSession(ABC):
 class TokenSession(BaseSession):
     """Implements simple session that ues existed token for work"""
 
-    API_VERSION = '5.63'
+    API_VERSION = '5.74'
     REQUEST_URL = 'https://api.vk.com/method/'
 
     def __init__(self, access_token: str = None, timeout: int = 10, driver=None):
@@ -111,7 +111,7 @@ class TokenSession(BaseSession):
 
 class ImplicitSession(TokenSession):
     """
-    For client authorisation in js apps and standalone (desktop and mobile) apps
+    For client authorization in js apps and standalone (desktop and mobile) apps
     See more in https://new.vk.com/dev/implicit_flow_user
     """
     AUTH_URL = 'https://oauth.vk.com/authorize'
@@ -269,7 +269,7 @@ class ImplicitSession(TokenSession):
 
 class AuthorizationCodeSession(TokenSession):
     """
-    For client authorisation in js apps and standalone (desktop and mobile) apps
+    For client authorization in js apps and standalone (desktop and mobile) apps
     See more in https://new.vk.com/dev/implicit_flow_user
     """
     CODE_URL = 'https://oauth.vk.com/access_token'

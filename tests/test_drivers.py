@@ -1,10 +1,8 @@
 import json
 import os
-import unittest
 from http.server import HTTPServer
 from threading import Thread
 from unittest import mock
-import aio.testing
 import time
 import math
 import asyncio

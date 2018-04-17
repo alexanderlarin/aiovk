@@ -21,7 +21,7 @@ class CustomClientResponse(aiohttp.ClientResponse):
         await super().start(connection, read_until_eof)
         headers = CIMultiDict(self.headers)
         location = headers.get(hdrs.LOCATION, None)
-        if location is not None:
+        if location:
             headers[hdrs.LOCATION] = location.replace('#', '?')
         self.headers = CIMultiDictProxy(headers)
         self.raw_headers = tuple(headers.items())
@@ -95,7 +95,7 @@ class HttpDriver(BaseDriver):
         await self.session.close()
 
 
-if ProxyConnector is not None:
+if ProxyConnector:
     class Socks5Driver(HttpDriver):
         connector = ProxyConnector
 

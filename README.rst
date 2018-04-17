@@ -208,4 +208,4 @@ Use Session object
 Notice that ``wait`` value only for long pool connection.
 
 Real pause could be more ``wait`` time because of need time
-for authorisation (if needed), reconnect and etc.
+for authorization (if needed), reconnect and etc.
