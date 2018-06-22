@@ -1,31 +1,10 @@
 import aiohttp
-from aiohttp import hdrs
-from multidict import CIMultiDict
-from multidict import CIMultiDictProxy
 
 try:
     import aiosocks
     from aiosocks.connector import ProxyConnector
 except ImportError:
     ProxyConnector = None
-
-
-class CustomClientResponse(aiohttp.ClientResponse):
-    # you have to use this class in response_class parameter of any aiohttp.ClientSession instance
-    # example: aiohttp.ClientSession(response_class=CustomClientResponse)
-    # read more: https://github.com/Fahreeve/aiovk/issues/3
-
-    async def start(self, connection, read_until_eof=False):
-        # vk.com return url like this: http://REDIRECT_URI#access_token=...
-        # but aiohttp by default removes all parameters after '#'
-        await super().start(connection, read_until_eof)
-        headers = CIMultiDict(self.headers)
-        location = headers.get(hdrs.LOCATION, None)
-        if location:
-            headers[hdrs.LOCATION] = location.replace('#', '?')
-        self.headers = CIMultiDictProxy(headers)
-        self.raw_headers = tuple(headers.items())
-        return self
 
 
 class BaseDriver:
@@ -69,8 +48,7 @@ class HttpDriver(BaseDriver):
     def __init__(self, timeout=10, loop=None, session=None):
         super().__init__(timeout, loop)
         if not session:
-            self.session = aiohttp.ClientSession(
-                response_class=CustomClientResponse, loop=loop)
+            self.session = aiohttp.ClientSession(loop=loop)
         else:
             self.session = session
 
@@ -108,4 +86,4 @@ if ProxyConnector:
             else:
                 auth = None
             conn = self.connector(proxy=addr, proxy_auth=auth, loop=loop)
-            self.session = aiohttp.ClientSession(connector=conn, response_class=CustomClientResponse)
+            self.session = aiohttp.ClientSession(connector=conn)
