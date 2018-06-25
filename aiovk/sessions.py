@@ -55,6 +55,9 @@ class TokenSession(BaseSession):
         """Make available usage of `async with` context manager"""
         return self
 
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        return await self.driver.close()
+
     async def send_api_request(self, method_name: str, params: dict = None, timeout: int = None) -> dict:
         # Prepare request
         if not timeout:
