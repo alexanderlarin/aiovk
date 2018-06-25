@@ -1,4 +1,5 @@
 import json
+from abc import ABC, abstractmethod
 
 from yarl import URL
 
@@ -8,7 +9,33 @@ from aiovk.exceptions import VkAuthError, VkCaptchaNeeded, VkTwoFactorCodeNeeded
 from aiovk.parser import AuthPageParser, TwoFactorCodePageParser, AccessPageParser
 
 
-class TokenSession(object):
+class BaseSession(ABC):
+    """Interface for all types of sessions"""
+
+    @abstractmethod
+    async def __aenter__(self):
+        """Make avaliable usage of "async with" context manager"""
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """Closes session after usage of context manager with Session"""
+        await self.close()
+
+    async def close(self) -> None:
+        """Perform the actions associated with the completion of the current session"""
+
+    @abstractmethod
+    async def send_api_request(self, method_name: str, params: dict = None, timeout: int = None) -> dict:
+        """Method that use API instance for sending request to vk server
+
+        :param method_name: any value from the left column of the methods table from `https://vk.com/dev/methods`
+        :param params: dict of params that available for current method.
+                       For example see `Parameters` block from: `https://vk.com/dev/account.getInfo`
+        :param timeout: timeout for response from the server
+        :return: dict that contain data from `Result` block. Example see here: `https://vk.com/dev/account.getInfo`
+        """
+
+
+class TokenSession(BaseSession):
     """Implements simple session that ues existed token for work"""
 
     API_VERSION = '5.74'
@@ -24,7 +51,7 @@ class TokenSession(object):
         self.access_token = access_token
         self.driver = HttpDriver(timeout) if driver is None else driver
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> BaseSession:
         """Make available usage of `async with` context manager"""
         return self
 
