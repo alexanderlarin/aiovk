@@ -97,8 +97,9 @@ class BaseLongPoll(ABC):
         return self.pts
 
 
-class LongPoll(BaseLongPoll):
+class UserLongPoll(BaseLongPoll):
     """Implements https://vk.com/dev/using_longpoll"""
+
     async def _get_long_poll_server(self, need_pts=False):
         response = await self.api('messages.getLongPollServer', need_pts=int(need_pts), timeout=self.timeout)
         self.pts = response.get('pts')
@@ -106,6 +107,13 @@ class LongPoll(BaseLongPoll):
         self.key = response['key']
         # fucking differences between long poll methods in vk api!
         self.base_url = 'https://{}'.format(response['server'])
+
+
+class LongPoll(UserLongPoll):
+    """Implements https://vk.com/dev/using_longpoll
+
+    This class for backward compatibility
+    """
 
     
 class BotsLongPoll(BaseLongPoll):

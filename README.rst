@@ -182,6 +182,10 @@ Supports both variants like API object
 
 Long Poll
 ---------
+**UserLongPoll** - for User Long Poll API. See https://vk.com/dev/using_longpoll
+
+**BotsLongPoll** - for Bots Long Poll API. See https://vk.com/dev/bots_longpoll
+
 Use exist API object
 
 .. code-block:: python
