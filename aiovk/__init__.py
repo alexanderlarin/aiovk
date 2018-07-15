@@ -1,4 +1,4 @@
-__version__ = '2.2.0'
+__version__ = '2.2.1'
 
 from aiovk.sessions import ImplicitSession, TokenSession, AuthorizationCodeSession
 from aiovk.api import API
