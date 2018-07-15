@@ -69,3 +69,71 @@ class LongPoll:
         if need_ts:
             return self.pts, self.ts
         return self.pts
+
+    
+class BotsLongPoll:
+    def __init__(self, session_or_api, mode, group_id, wait=25, version=1, timeout=None):
+        if type(session_or_api) == API:
+            self.api = session_or_api
+        else:
+            self.api = API(session_or_api)
+        self.timeout = timeout or self.api._session.timeout
+        if type(mode) == list:
+            mode = sum(mode)
+        self.base_params = {
+            'version': version,
+            'wait': wait,
+            'mode': mode,
+            'act': 'a_check'
+        }
+        self.group_id = group_id
+        self.pts = None
+        self.ts = None
+        self.key = None
+        self.base_url = None
+
+    async def _get_long_poll_server(self, need_pts=False):
+        response = await self.api('groups.getLongPollServer', group_id=self.group_id)
+        self.pts = response.get('pts')
+        self.ts = response['ts']
+        self.key = response['key']
+        self.base_url = '{}'.format(response['server']) # Method already returning url with https://
+
+    async def wait(self, need_pts=False):
+        if not self.base_url:
+            await self._get_long_poll_server(need_pts)
+        params = {
+            'ts': self.ts,
+            'key': self.key,
+        }
+        params.update(self.base_params)
+        # invalid mymetype from server
+        code, response = await self.api._session.driver.get_text(self.base_url, params, timeout=2 * self.base_params['wait'])
+        if code == 403:
+            raise VkLongPollError(403,
+                                  'smth weth wrong',
+                                  self.base_url + '/',
+                                  params
+                                  )
+        response = json.loads(response)
+        failed = response.get('failed')
+        if not failed:
+            self.ts = response['ts']
+            return response
+        if failed == 1:
+            self.ts = response['ts']
+        elif failed == 4:
+            raise VkLongPollError(4,
+                                  'An invalid version number was passed in the version parameter',
+                                  self.base_url + '/',
+                                  params)
+        else:
+            self.base_url = None
+        return await self.wait()
+
+    async def get_pts(self, need_ts=False):
+        if not self.base_url or not self.pts:
+            await self._get_long_poll_server(need_pts=True)
+        if need_ts:
+            return self.pts, self.ts
+        return self.pts
