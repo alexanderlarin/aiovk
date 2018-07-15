@@ -36,7 +36,7 @@ class BaseSession(ABC):
 
 
 class TokenSession(BaseSession):
-    """Implements simple session that ues existed token for work"""
+    """Implements simple session that uses existed token for work"""
 
     API_VERSION = '5.74'
     REQUEST_URL = 'https://api.vk.com/method/'
