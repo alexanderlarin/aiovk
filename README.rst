@@ -180,18 +180,16 @@ It is useful when a bot has a large message flow
 
 Supports both variants like API object
 
-Long Poll
+User Long Poll
 ---------
-**UserLongPoll** - for User Long Poll API. See https://vk.com/dev/using_longpoll
-
-**BotsLongPoll** - for Bots Long Poll API. See https://vk.com/dev/bots_longpoll
+For documentation, see: https://vk.com/dev/using_longpoll
 
 Use exist API object
 
 .. code-block:: python
 
     >>> api = API(session)
-    >>> lp = LongPoll(api, mode=2)  # default wait=25
+    >>> lp = UserLongPoll(api, mode=2)  # default wait=25
     >>> await lp.wait()
     {"ts":1820350345,"updates":[...]}
     >>> await lp.wait()
@@ -201,9 +199,41 @@ Use Session object
 
 .. code-block:: python
 
-    >>> lp = LongPoll(session, mode=2)  # default wait=25
+    >>> lp = UserLongPoll(session, mode=2)  # default wait=25
     >>> await lp.wait()
     {"ts":1820350345,"updates":[...]}
+    >>> await lp.get_pts()  # return pts
+    191231223
+    >>> await lp.get_pts(need_ts=True)  # return pts, ts
+    191231223, 1820350345
+
+Notice that ``wait`` value only for long pool connection.
+
+Real pause could be more ``wait`` time because of need time
+for authorization (if needed), reconnect and etc.
+
+Bots Long Poll
+------------
+For documentation, see: https://vk.com/dev/bots_longpoll
+
+Use exist API object
+
+.. code-block:: python
+
+    >>> api = API(session)
+    >>> lp = BotsLongPool(api, mode=2, group_id=1)  # default wait=25
+    >>> await lp.wait()
+    {"ts":345,"updates":[...]}
+    >>> await lp.wait()
+    {"ts":346,"updates":[...]}
+
+Use Session object
+
+.. code-block:: python
+
+    >>> lp = BotsLongPool(session, mode=2, group_id=1)  # default wait=25
+    >>> await lp.wait()
+    {"ts":78455,"updates":[...]}
     >>> await lp.get_pts()  # return pts
     191231223
     >>> await lp.get_pts(need_ts=True)  # return pts, ts
