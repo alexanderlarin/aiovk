@@ -1,0 +1,1 @@
+{"error": {"error_code": 5, "error_msg": "User authorization failed: no access_token passed.", "request_params": [{"key": "oauth", "value": "1"}, {"key": "method", "value": "messages.getLongPollServer"}, {"key": "need_pts", "value": "0"}, {"key": "v", "value": "5.74"}]}}

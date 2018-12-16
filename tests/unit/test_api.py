@@ -1,7 +1,8 @@
-import aiounittest
+from aiohttp.test_utils import unittest_run_loop
 
 from aiovk import API
 from aiovk.api import Request, LazyRequest, LazyAPI
+from tests.utils import AioTestCase
 
 
 class TestSession:
@@ -13,7 +14,8 @@ class TestSession:
         return out
 
 
-class RequestTestCase(aiounittest.AsyncTestCase):
+class RequestTestCase(AioTestCase):
+    @unittest_run_loop
     async def test_request_without_args(self):
         api = API(TestSession())
         request = Request(api, 'test')
@@ -24,6 +26,7 @@ class RequestTestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_with_args(self):
         api = API(TestSession())
         request = Request(api, 'test')
@@ -34,6 +37,7 @@ class RequestTestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_with_timeout(self):
         api = API(TestSession())
         request = Request(api, 'test')
@@ -45,7 +49,8 @@ class RequestTestCase(aiounittest.AsyncTestCase):
         self.assertDictEqual(first, second)
 
 
-class LazyRequestTestCase(aiounittest.AsyncTestCase):
+class LazyRequestTestCase(AioTestCase):
+    @unittest_run_loop
     async def test_request_without_args(self):
         api = API(TestSession())
         request = LazyRequest(api, 'test')
@@ -57,6 +62,7 @@ class LazyRequestTestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_with_args(self):
         api = API(TestSession())
         request = LazyRequest(api, 'test')
@@ -68,6 +74,7 @@ class LazyRequestTestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_with_timeout(self):
         api = API(TestSession())
         request = LazyRequest(api, 'test')
@@ -80,7 +87,8 @@ class LazyRequestTestCase(aiounittest.AsyncTestCase):
         self.assertDictEqual(first, second)
 
 
-class APITestCase(aiounittest.AsyncTestCase):
+class APITestCase(AioTestCase):
+    @unittest_run_loop
     async def test_request_without_args(self):
         api = API(TestSession())
         first = await api.test()
@@ -90,6 +98,7 @@ class APITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_with_args(self):
         api = API(TestSession())
         first = await api.test(arg=1)
@@ -99,6 +108,7 @@ class APITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_with_timeout(self):
         api = API(TestSession())
         first = await api.test(timeout=1)
@@ -108,6 +118,7 @@ class APITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_complex_request_without_args(self):
         api = API(TestSession())
         first = await api.test1.test2()
@@ -117,6 +128,7 @@ class APITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_complex_request_with_args(self):
         api = API(TestSession())
         first = await api.test1.test2(arg=1)
@@ -126,6 +138,7 @@ class APITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_complex_request(self):
         api = API(TestSession())
         first = await api.test1.test2(timeout=1)
@@ -135,6 +148,7 @@ class APITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_with_method_name(self):
         api = API(TestSession())
         first = await api('test')
@@ -144,6 +158,7 @@ class APITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_with_method_name_and_args(self):
         api = API(TestSession())
         first = await api('test', arg=1)
@@ -153,6 +168,7 @@ class APITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_with_method_name_and_timeout(self):
         api = API(TestSession())
         first = await api('test', timeout=1)
@@ -163,7 +179,8 @@ class APITestCase(aiounittest.AsyncTestCase):
         self.assertDictEqual(first, second)
 
 
-class LazyAPITestCase(aiounittest.AsyncTestCase):
+class LazyAPITestCase(AioTestCase):
+    @unittest_run_loop
     async def test_request_without_args(self):
         api = LazyAPI(TestSession())
         message = api.test()
@@ -174,11 +191,13 @@ class LazyAPITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_as_non_lazy_api(self):
         api = LazyAPI(TestSession())
         with self.assertRaises(TypeError):
             await api.test()
 
+    @unittest_run_loop
     async def test_request_with_args(self):
         api = LazyAPI(TestSession())
         message = api.test(arg=1)
@@ -189,6 +208,7 @@ class LazyAPITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_with_timeout(self):
         api = LazyAPI(TestSession())
         message = api.test(timeout=1)
@@ -199,6 +219,7 @@ class LazyAPITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_complex_request_without_args(self):
         api = LazyAPI(TestSession())
         message = api.test1.test2()
@@ -209,6 +230,7 @@ class LazyAPITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_complex_request_with_args(self):
         api = LazyAPI(TestSession())
         message = api.test1.test2(arg=1)
@@ -219,6 +241,7 @@ class LazyAPITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_complex_request(self):
         api = LazyAPI(TestSession())
         message = api.test1.test2(timeout=1)
@@ -229,6 +252,7 @@ class LazyAPITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_with_method_name(self):
         api = LazyAPI(TestSession())
         message = api('test')
@@ -239,6 +263,7 @@ class LazyAPITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_with_method_name_and_args(self):
         api = LazyAPI(TestSession())
         message = api('test', arg=1)
@@ -249,6 +274,7 @@ class LazyAPITestCase(aiounittest.AsyncTestCase):
                   }
         self.assertDictEqual(first, second)
 
+    @unittest_run_loop
     async def test_request_with_method_name_and_timeout(self):
         api = LazyAPI(TestSession())
         message = api('test', timeout=1)
