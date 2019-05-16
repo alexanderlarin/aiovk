@@ -221,7 +221,7 @@ Use exist API object
 .. code-block:: python
 
     >>> api = API(session)
-    >>> lp = BotsLongPool(api, mode=2, group_id=1)  # default wait=25
+    >>> lp = BotsLongPoll(api, mode=2, group_id=1)  # default wait=25
     >>> await lp.wait()
     {"ts":345,"updates":[...]}
     >>> await lp.wait()
@@ -231,7 +231,7 @@ Use Session object
 
 .. code-block:: python
 
-    >>> lp = BotsLongPool(session, mode=2, group_id=1)  # default wait=25
+    >>> lp = BotsLongPoll(session, mode=2, group_id=1)  # default wait=25
     >>> await lp.wait()
     {"ts":78455,"updates":[...]}
     >>> await lp.get_pts()  # return pts
