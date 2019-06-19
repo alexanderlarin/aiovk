@@ -1,12 +1,13 @@
 import json
 from abc import ABC, abstractmethod
+from urllib.parse import parse_qsl
 
 from yarl import URL
 
 from aiovk.drivers import HttpDriver
-from aiovk.exceptions import VkAuthError, VkCaptchaNeeded, VkTwoFactorCodeNeeded, VkAPIError, CAPTCHA_IS_NEEDED, \
-    AUTHORIZATION_FAILED
-from aiovk.parser import AuthPageParser, TwoFactorCodePageParser, AccessPageParser
+from aiovk.exceptions import AUTHORIZATION_FAILED, CAPTCHA_IS_NEEDED, VkAPIError, VkAuthError, VkCaptchaNeeded, \
+    VkTwoFactorCodeNeeded
+from aiovk.parser import AccessPageParser, AuthPageParser, TwoFactorCodePageParser
 
 
 class BaseSession(ABC):
@@ -56,7 +57,7 @@ class TokenSession(BaseSession):
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        return await self.driver.close()
+        return await self.close()
 
     async def send_api_request(self, method_name: str, params: dict = None, timeout: int = None) -> dict:
         # Prepare request
@@ -111,6 +112,9 @@ class TokenSession(BaseSession):
         """
         raise VkCaptchaNeeded(url, sid)
 
+    async def close(self):
+        return await self.driver.close()
+
 
 class ImplicitSession(TokenSession):
     """
@@ -159,7 +163,8 @@ class ImplicitSession(TokenSession):
                 url, html = await self._process_access_form(html)
             if url.path == '/blank.html':
                 # Success
-                self.access_token = url.query['access_token']
+                parsed_fragments = dict(parse_qsl(url.fragment))
+                self.access_token = parsed_fragments['access_token']
                 return
         raise VkAuthError('Something went wrong', 'Exceeded the number of attempts to log in')
 
@@ -292,7 +297,7 @@ class AuthorizationCodeSession(TokenSession):
         self.app_secret = app_secret
         self.redirect_uri = redirect_uri
 
-    async def authorize(self, code: str=None) -> None:
+    async def authorize(self, code: str = None) -> None:
         """Getting a new token from server"""
         code = await self.get_code(code)
         params = {
@@ -306,6 +311,6 @@ class AuthorizationCodeSession(TokenSession):
             raise VkAuthError(response['error'], response['error_description'], self.CODE_URL, params)
         self.access_token = response['access_token']
 
-    async def get_code(self, code: str=None) -> str:
+    async def get_code(self, code: str = None) -> str:
         """Get temporary code from external sources"""
         return code or self.code
