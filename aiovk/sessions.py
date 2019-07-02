@@ -111,6 +111,9 @@ class TokenSession(BaseSession):
         """
         raise VkCaptchaNeeded(url, sid)
 
+    async def close(self):
+        await self.driver.close()
+
 
 class ImplicitSession(TokenSession):
     """
