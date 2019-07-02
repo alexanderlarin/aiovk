@@ -1,9 +1,0 @@
-USER_LOGIN = ''         # user email or phone number
-USER_PASSWORD = ''      # user password
-APP_ID = ''
-TWOFACTOR_CODE = ''     # code for Google Authenticator or same app without spaces or '' if you don't use 2factor auth
-
-# Authorization Code Flow
-REDIRECT_URI = 'http://localhost:8000/'       # If empty this test section will be skip or only localhost
-REDIRECT_URI_PORT = 8000                      # need free port > 1000
-APP_SECRET = ''

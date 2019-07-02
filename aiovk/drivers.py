@@ -1,9 +1,9 @@
 import aiohttp
 
 try:
-    import aiosocks
-    from aiosocks.connector import ProxyConnector
-except ImportError:
+    import aiosocksy
+    from aiosocksy.connector import ProxyConnector
+except ImportError as e:
     ProxyConnector = None
 
 
@@ -67,7 +67,7 @@ class HttpDriver(BaseDriver):
 
     async def post_text(self, url, data, timeout=None):
         async with self.session.post(url, data=data, timeout=timeout or self.timeout) as response:
-            return response.real_url, await response.text()
+            return response._real_url, await response.text()
 
     async def close(self):
         await self.session.close()
@@ -78,12 +78,11 @@ if ProxyConnector:
         connector = ProxyConnector
 
         def __init__(self, address, port, login=None, password=None, timeout=10, loop=None):
-            super().__init__(timeout)
-            self.close()
-            addr = aiosocks.Socks5Addr(address, port)
+            addr = aiosocksy.Socks5Addr(address, port)
             if login and password:
-                auth = aiosocks.Socks5Auth(login, password=password)
+                auth = aiosocksy.Socks5Auth(login, password=password)
             else:
                 auth = None
             conn = self.connector(proxy=addr, proxy_auth=auth, loop=loop)
-            self.session = aiohttp.ClientSession(connector=conn)
+            session = aiohttp.ClientSession(connector=conn)
+            super().__init__(timeout, loop, session)

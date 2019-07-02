@@ -6,11 +6,15 @@ Features
 --------
 * asynchronous
 * support python 3.5+ versions
-* have only one dependency - ``aiohttp``
+* have only one dependency - ``aiohttp 3+``
 * support two-factor authentication
-* support socks proxy with ``aiosocks``
+* support socks proxy with ``aiosocksy``
 * support rate limit of requests
 * support Long Poll connection
+
+TODO
+----
+* replace ``aiosocksy`` to ``aiohttp-socks``
 
 Install
 -------

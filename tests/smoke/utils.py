@@ -88,7 +88,7 @@ class VKRequestHandler(BaseHTTPRequestHandler):
             post_data = self.rfile.read(content_length)  # <--- Gets the data itself
             post_data = parse_qs(post_data.decode())
             if 'email' in post_data:
-                redirect_url = 'https://{}/blank.html?access_token={}'.format(self.headers['Host'], self.token)
+                redirect_url = 'https://{}/blank.html#access_token={}'.format(self.headers['Host'], self.token)
                 self.redirect(redirect_url)
             else:
                 self.html_pages('blank.html')

@@ -4,7 +4,7 @@ from http.server import HTTPServer
 from threading import Thread
 from unittest import mock
 import asyncio
-import aiosocks
+import aiosocksy
 from aiohttp import TCPConnector
 from aiohttp.test_utils import unittest_run_loop
 from yarl import URL
@@ -37,7 +37,7 @@ class TestMethodsMixin:
     async def json(self, loop=None):
         driver = self.driver_class(loop=loop, **self.driver_kwargs)
         jsn = await driver.json(self.json_url, {})
-        driver.close()
+        await driver.close()
         original = {}
         with open(self.json_filepath) as f:
             original = json.load(f)
@@ -55,7 +55,7 @@ class TestMethodsMixin:
     async def get_text(self, loop=None):
         driver = self.driver_class(loop=loop, **self.driver_kwargs)
         status, text = await driver.get_text(self.json_url, {})
-        driver.close()
+        await driver.close()
         self.assertEqual(status, 200)
         original = ''
         with open(self.json_filepath) as f:
@@ -74,7 +74,7 @@ class TestMethodsMixin:
     async def get_bin(self, loop=None):
         driver = self.driver_class(loop=loop, **self.driver_kwargs)
         text = await driver.get_bin(self.json_url, {})
-        driver.close()
+        await driver.close()
         original = ''
         with open(self.json_filepath, 'rb') as f:
             original = f.read()
@@ -97,7 +97,7 @@ class TestMethodsMixin:
         driver = self.driver_class(loop=loop, **self.driver_kwargs)
         request_url = self.json_url
         url, text = await driver.post_text(request_url, data=data)
-        driver.close()
+        await driver.close()
         self.assertEqual(url, URL(request_url))
         self.assertEqual(text, 'OK')
 
@@ -118,8 +118,8 @@ class HttpDirverTestCase(TestMethodsMixin, AioTestCase):
 class TestSocksConnector(TCPConnector):
     def __init__(self, proxy, proxy_auth, loop):
         super().__init__(loop=loop)
-        assert type(proxy) == aiosocks.Socks5Addr
-        assert type(proxy_auth) == aiosocks.Socks5Auth or proxy_auth is None
+        assert type(proxy) == aiosocksy.Socks5Addr
+        assert type(proxy_auth) == aiosocksy.Socks5Auth or proxy_auth is None
 
 
 @mock.patch('aiovk.drivers.Socks5Driver.connector', TestSocksConnector)
