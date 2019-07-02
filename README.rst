@@ -185,7 +185,7 @@ It is useful when a bot has a large message flow
 Supports both variants like API object
 
 User Long Poll
----------
+--------------
 For documentation, see: https://vk.com/dev/using_longpoll
 
 Use exist API object
@@ -217,7 +217,7 @@ Real pause could be more ``wait`` time because of need time
 for authorization (if needed), reconnect and etc.
 
 Bots Long Poll
-------------
+--------------
 For documentation, see: https://vk.com/dev/bots_longpoll
 
 Use exist API object
