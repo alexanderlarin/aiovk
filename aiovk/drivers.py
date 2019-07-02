@@ -67,7 +67,7 @@ class HttpDriver(BaseDriver):
 
     async def post_text(self, url, data, timeout=None):
         async with self.session.post(url, data=data, timeout=timeout or self.timeout) as response:
-            return response.url, await response.text()
+            return response.real_url, await response.text()
 
     async def close(self):
         await self.session.close()
