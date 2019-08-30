@@ -9,8 +9,8 @@ from tests.utils import AioTestCase
 
 
 class LimitRateBaseTestDriver(BaseDriver):
-    async def json(self, *args, **kwargs):
-        return time.time()
+    async def get_json(self, *args, **kwargs):
+        return 200, time.time()
 
     async def close(self):
         pass
@@ -32,14 +32,14 @@ class LimitRateDriverMixinTestCase(AioTestCase):
     async def test_json_fast(self):
         driver = self.get_driver()
         t0 = time.time()
-        t1 = await driver.json()
+        _, t1 = await driver.get_json()
         self.assertEqual(math.floor(t1 - t0), 0)
         await driver.close()
 
     @unittest_run_loop
     async def test_json_slow(self):
         driver = self.get_driver()
-        t1 = await driver.json()
-        t2 = await driver.json()
+        _, t1 = await driver.get_json()
+        _, t2 = await driver.get_json()
         self.assertEqual(math.floor(t2 - t1), self.period)
         await driver.close()

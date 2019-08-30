@@ -10,16 +10,16 @@ class LimitRateDriverMixin:
         self._queue = TaskQueue(self.requests_per_period, self.period)
 
     @wait_free_slot
-    async def json(self, *args, **kwargs):
-        return await super().json(*args, **kwargs)
-
-    @wait_free_slot
-    async def get_text(self, *args, **kwargs):
-        return await super().get_text(*args, **kwargs)
+    async def get_json(self, *args, **kwargs):
+        return await super().get_json(*args, **kwargs)
 
     @wait_free_slot
     async def get_bin(self, *args, **kwargs):
         return await super().get_bin(*args, **kwargs)
+
+    @wait_free_slot
+    async def get_text(self, *args, **kwargs):
+        return await super().get_text(*args, **kwargs)
 
     @wait_free_slot
     async def post_text(self, *args, **kwargs):

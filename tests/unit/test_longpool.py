@@ -15,9 +15,9 @@ class TestDriver(BaseDriver):
     async def get_text(self, url, params, timeout=None):
         if self.counter > 5:
             self.counter = 0
-            return 200, json.dumps({'ts': -TestSession.TS})
+            return 200, json.dumps({'ts': -TestSession.TS}), url
         self.counter += 1
-        return 200, json.dumps(self.message)
+        return 200, json.dumps(self.message), url
 
 
 class TestSession:

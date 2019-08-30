@@ -59,12 +59,12 @@ class BaseLongPoll(ABC):
         }
         params.update(self.base_params)
         # invalid mimetype from server
-        code, response = await self.api._session.driver.get_text(
+        status, response, _ = await self.api._session.driver.get_text(
             self.base_url, params,
             timeout=2 * self.base_params['wait']
         )
 
-        if code == 403:
+        if status == 403:
             raise VkLongPollError(403, 'smth weth wrong', self.base_url + '/', params)
 
         response = json.loads(response)

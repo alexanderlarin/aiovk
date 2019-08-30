@@ -12,32 +12,32 @@ class BaseDriver:
         self.timeout = timeout
         self._loop = loop
 
-    async def json(self, url, params, timeout=None):
-        '''
+    async def get_json(self, url, params, timeout=None):
+        """
         :param params: dict of query params
-        :return: dict from json response
-        '''
-        raise NotImplementedError
-
-    async def get_text(self, url, params, timeout=None):
-        '''
-        :param params: dict of query params
-        :return: http status code, text body of response
-        '''
+        :return: http status code, dict from json response
+        """
         raise NotImplementedError
 
     async def get_bin(self, url, params, timeout=None):
-        '''
+        """
         :param params: dict of query params
         :return: http status code, binary body of response
-        '''
+        """
+        raise NotImplementedError
+
+    async def get_text(self, url, params, timeout=None):
+        """
+        :param params: dict of query params
+        :return: http status code, text body of response and redirect_url
+        """
         raise NotImplementedError
 
     async def post_text(self, url, data, timeout=None):
-        '''
+        """
         :param data: dict pr string
-        :return: redirect url and text body of response
-        '''
+        :return: http status code, text body of response and redirect url
+        """
         raise NotImplementedError
 
     async def close(self):
@@ -52,22 +52,22 @@ class HttpDriver(BaseDriver):
         else:
             self.session = session
 
-    async def json(self, url, params, timeout=None):
+    async def get_json(self, url, params, timeout=None):
         # timeouts - https://docs.aiohttp.org/en/v3.0.0/client_quickstart.html#timeouts
         async with self.session.get(url, params=params, timeout=timeout or self.timeout) as response:
-            return await response.json()
-
-    async def get_text(self, url, params, timeout=None):
-        async with self.session.get(url, params=params, timeout=timeout or self.timeout) as response:
-            return response.status, await response.text()
+            return response.status, await response.json()
 
     async def get_bin(self, url, params, timeout=None):
         async with self.session.get(url, params=params, timeout=timeout or self.timeout) as response:
-            return await response.read()
+            return response.status, await response.read()
+
+    async def get_text(self, url, params, timeout=None):
+        async with self.session.get(url, params=params, timeout=timeout or self.timeout) as response:
+            return response.status, await response.text(), response.real_url
 
     async def post_text(self, url, data, timeout=None):
         async with self.session.post(url, data=data, timeout=timeout or self.timeout) as response:
-            return response._real_url, await response.text()
+            return response.status, await response.text(), response.real_url
 
     async def close(self):
         await self.session.close()

@@ -70,7 +70,7 @@ class TokenSession(BaseSession):
         params['v'] = self.API_VERSION
 
         # Send request
-        response = await self.driver.json(self.REQUEST_URL + method_name, params, timeout)
+        _, response = await self.driver.get_json(self.REQUEST_URL + method_name, params, timeout)
 
         # Process response
         # Checking the section with errors
@@ -146,7 +146,7 @@ class ImplicitSession(TokenSession):
 
     async def authorize(self) -> None:
         """Getting a new token from server"""
-        html = await self._get_auth_page()
+        _, html = await self._get_auth_page()  # TODO: use redirect_url
         url = URL('/authorize?email')
         for step in range(self.num_of_attempts):
             if url.path == '/authorize' and 'email' in url.query:
@@ -185,13 +185,13 @@ class ImplicitSession(TokenSession):
             params['scope'] = self.scope
 
         # Send request
-        status, response = await self.driver.get_text(self.AUTH_URL, params)
+        status, response, redirect_url = await self.driver.get_text(self.AUTH_URL, params)
 
         # Process response
         if status != 200:
             error_dict = json.loads(response)
             raise VkAuthError(error_dict['error'], error_dict['error_description'], self.AUTH_URL, params)
-        return response
+        return redirect_url, response
 
     async def _process_auth_form(self, html: str) -> (str, str):
         """
@@ -221,8 +221,8 @@ class ImplicitSession(TokenSession):
             form_url = "https://m.vk.com{}".format(form_url)
 
         # Send request
-        url, html = await self.driver.post_text(form_url, form_data)
-        return url, html
+        _, html, redirect_url = await self.driver.post_text(form_url, form_data)
+        return redirect_url, html
 
     async def _process_2auth_form(self, html: str) -> (str, str):
         """
@@ -245,8 +245,8 @@ class ImplicitSession(TokenSession):
         form_data['code'] = await self.enter_confirmation_code()
 
         # Send request
-        url, html = await self.driver.post_text(form_url, form_data)
-        return url, html
+        _, html, redirect_url = await self.driver.post_text(form_url, form_data)
+        return redirect_url, html
 
     async def _process_access_form(self, html: str) -> (str, str):
         """
@@ -264,8 +264,8 @@ class ImplicitSession(TokenSession):
         form_data = dict(p.inputs)
 
         # Send request
-        url, html = await self.driver.post_text(form_url, form_data)
-        return url, html
+        _, html, redirect_url = await self.driver.post_text(form_url, form_data)
+        return redirect_url, html
 
     async def enter_confirmation_code(self) -> str:
         """
@@ -306,7 +306,7 @@ class AuthorizationCodeSession(TokenSession):
             'redirect_uri': self.redirect_uri,
             'code': code
         }
-        response = await self.driver.json(self.CODE_URL, params, self.timeout)
+        _, response = await self.driver.get_json(self.CODE_URL, params, self.timeout)
         if 'error' in response:
             raise VkAuthError(response['error'], response['error_description'], self.CODE_URL, params)
         self.access_token = response['access_token']
