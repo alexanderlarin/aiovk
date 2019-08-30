@@ -1,5 +1,6 @@
 import json
 from abc import ABC, abstractmethod
+from typing import Tuple
 from urllib.parse import parse_qsl
 
 from yarl import URL
@@ -146,12 +147,15 @@ class ImplicitSession(TokenSession):
 
     async def authorize(self) -> None:
         """Getting a new token from server"""
-        _, html = await self._get_auth_page()  # TODO: use redirect_url
-        url = URL('/authorize?email')
+        url, html = await self._get_auth_page()
         for step in range(self.num_of_attempts):
-            if url.path == '/authorize' and 'email' in url.query:
-                # Invalid login or password  and 'email' in q.query
-                url, html = await self._process_auth_form(html)
+            if url.path == '/authorize':
+                if '__q_hash' in url.query:
+                    # Give rights for app
+                    url, html = await self._process_access_form(html)
+                else:
+                    # Invalid login or password  and 'email' in q.query
+                    url, html = await self._process_auth_form(html)
             if url.path == '/login' and url.query.get('act', '') == 'authcheck':
                 # Entering 2auth code
                 url, html = await self._process_2auth_form(html)
@@ -168,10 +172,10 @@ class ImplicitSession(TokenSession):
                 return
         raise VkAuthError('Something went wrong', 'Exceeded the number of attempts to log in')
 
-    async def _get_auth_page(self) -> str:
+    async def _get_auth_page(self) -> Tuple[str, str]:
         """
         Get authorization mobile page without js
-        :return: html page
+        :return: redirect_url, html page
         """
         # Prepare request
         params = {
