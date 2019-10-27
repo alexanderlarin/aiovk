@@ -99,8 +99,12 @@ class TestMethodsMixin:
         request_url = self.json_url
         status, text, redirect_url = await driver.post_text(request_url, data=data)
         await driver.close()
+
+        with open(self.json_filepath) as f:
+            expected = f.read()
+
         self.assertEqual(status, 200)
-        self.assertEqual(text, 'OK')
+        self.assertEqual(text, expected)
         self.assertEqual(redirect_url, URL(request_url))
 
     @unittest_run_loop

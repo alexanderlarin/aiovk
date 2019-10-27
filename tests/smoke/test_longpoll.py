@@ -55,7 +55,6 @@ class LongPollRealTestCase(AioTestCase):
         s = TestInternalAuthSession(login='login', password='pass', app_id='123', scope='messages')
         s.BASE_URL = self.base_url
         await s.authorize()
-
         lp = LongPoll(s, mode=2, wait=2)
 
         response = await lp.wait()

@@ -1,3 +1,4 @@
+import json
 import os
 import socket
 import ssl
@@ -62,27 +63,15 @@ class VKRequestHandler(BaseHTTPRequestHandler):
         elif url.path == '/blank.html':
             self.html_pages('blank.html')
             return
-        elif url.path == '/method/messages.getLongPollServer':
-            if url.query.get('access_token') == self.token:
-                self.json_response('getLongPollServer.success.json', context={'base_url': self.headers['Host']})
-                return
-            else:
-                self.json_response('getLongPollServer.error.json')
-                return
         elif url.path == '/im1774':
             self.json_response('LongPoolWait.json')
-            return
-        elif url.path == '/method/users.get':
-            self.json_response('users.get.json')
-            return
-        elif url.path == '/method/users.get.error':
-            self.json_response('users.get.error.json')
             return
         else:
             pass
 
     def do_POST(self):
         url = URL(self.path)
+
         if url.query.get('act', None) == 'login':
             content_length = int(self.headers['Content-Length'])  # <--- Gets the size of data
             post_data = self.rfile.read(content_length)  # <--- Gets the data itself
@@ -93,6 +82,22 @@ class VKRequestHandler(BaseHTTPRequestHandler):
             else:
                 self.html_pages('blank.html')
             return
+        elif url.path == '/method/users.get':
+            self.json_response('users.get.json')
+            return
+        elif url.path == '/method/users.get.error':
+            self.json_response('users.get.error.json')
+            return
+        elif url.path == '/method/messages.getLongPollServer':
+            content_length = int(self.headers['Content-Length'])  # <--- Gets the size of data
+            post_data = self.rfile.read(content_length)  # <--- Gets the data itself
+            post_data = parse_qs(post_data.decode())
+            if post_data.get('access_token') == [self.token]:
+                self.json_response('getLongPollServer.success.json', context={'base_url': self.headers['Host']})
+                return
+            else:
+                self.json_response('getLongPollServer.error.json')
+                return
         else:
             pass
 
@@ -141,5 +146,7 @@ class MockServerRequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         self.send_response(200)
+        self.send_header('Content-type', 'application/json')
         self.end_headers()
-        self.wfile.write("OK".encode())
+        with open(self.json_filepath) as f:
+            self.wfile.write(f.read().encode())
