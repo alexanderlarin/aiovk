@@ -54,7 +54,7 @@ class HttpDriver(BaseDriver):
 
     async def get_json(self, url, params, timeout=None):
         # timeouts - https://docs.aiohttp.org/en/v3.0.0/client_quickstart.html#timeouts
-        async with self.session.get(url, params=params, timeout=timeout or self.timeout) as response:
+        async with self.session.post(url, data=params, timeout=timeout or self.timeout) as response:
             return response.status, await response.json()
 
     async def get_bin(self, url, params, timeout=None):
