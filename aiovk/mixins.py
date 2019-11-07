@@ -11,7 +11,7 @@ class LimitRateDriverMixin:
 
     @wait_free_slot
     async def get_json(self, *args, **kwargs):
-        return await super().get_json(*args, **kwargs)
+        return await super().post_json(*args, **kwargs)
 
     @wait_free_slot
     async def get_bin(self, *args, **kwargs):

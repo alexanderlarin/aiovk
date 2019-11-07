@@ -9,7 +9,7 @@ from tests.utils import AioTestCase
 
 
 class LimitRateBaseTestDriver(BaseDriver):
-    async def get_json(self, *args, **kwargs):
+    async def post_json(self, *args, **kwargs):
         return 200, time.time()
 
     async def close(self):

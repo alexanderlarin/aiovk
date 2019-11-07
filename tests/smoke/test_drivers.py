@@ -36,7 +36,7 @@ class TestMethodsMixin:
 
     async def get_json(self, loop=None):
         driver = self.driver_class(loop=loop, **self.driver_kwargs)
-        status, jsn = await driver.get_json(self.json_url, {})
+        status, jsn = await driver.post_json(self.json_url, {})
         await driver.close()
         self.assertEqual(status, 200)
         with open(self.json_filepath) as f:

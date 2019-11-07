@@ -71,7 +71,7 @@ class TokenSession(BaseSession):
         params['v'] = self.API_VERSION
 
         # Send request
-        _, response = await self.driver.get_json(self.REQUEST_URL + method_name, params, timeout)
+        _, response = await self.driver.post_json(self.REQUEST_URL + method_name, params, timeout)
 
         # Process response
         # Checking the section with errors
@@ -310,7 +310,7 @@ class AuthorizationCodeSession(TokenSession):
             'redirect_uri': self.redirect_uri,
             'code': code
         }
-        _, response = await self.driver.get_json(self.CODE_URL, params, self.timeout)
+        _, response = await self.driver.post_json(self.CODE_URL, params, self.timeout)
         if 'error' in response:
             raise VkAuthError(response['error'], response['error_description'], self.CODE_URL, params)
         self.access_token = response['access_token']
