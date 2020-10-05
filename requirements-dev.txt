@@ -1,3 +1,4 @@
 -r requirements.txt
 jinja2==2.10.1
 pyotp==2.2.7
+python-dotenv
