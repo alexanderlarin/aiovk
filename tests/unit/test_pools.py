@@ -150,3 +150,14 @@ class ExecutePoolTestCase(IsolatedAsyncioTestCase):
             result = pool.call('users.get', token1)
         self.assertTrue(result.ok)
         self.assertIsNotNone(result.result)
+
+    async def test_false_cast_response(self):
+        async with AsyncVkExecuteRequestPool() as pool:
+            result = pool.call(
+                "groups.isMember",
+                token1,
+                {"user_id": 1, "group_id": 1},
+            )
+        self.assertTrue(result.ok)
+        self.assertIsNotNone(result.result)
+        self.assertEqual(0, result.result)

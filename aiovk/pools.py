@@ -105,7 +105,7 @@ class VkExecuteMethodsPool:
         response = response['response']
 
         for call, result in zip(self.pool, response):
-            if result == False:  # noqa
+            if result is False:
                 call.result.error = errors.pop()
             else:
                 call.result.result = result
