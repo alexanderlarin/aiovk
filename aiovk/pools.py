@@ -80,6 +80,15 @@ class AsyncVkExecuteRequestPool:
         """
         if values is None:
             values = {}
+
+        result = None
+        # searching already added calls with equal token, method and values
+        for call in self.pool[token]:
+            if call.method == method and call.values == values:
+                result = call.result
+                break
+        if result:
+            return result
         result = AsyncResult()
         self.pool[token].append(VkCall(method=method, values=values, result=result))
         return result

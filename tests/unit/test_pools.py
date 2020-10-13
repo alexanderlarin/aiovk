@@ -161,3 +161,25 @@ class ExecutePoolTestCase(IsolatedAsyncioTestCase):
         self.assertTrue(result.ok)
         self.assertIsNotNone(result.result)
         self.assertEqual(0, result.result)
+
+    async def test_equal_requests(self):
+        """Тестирование того, что одинаковые запросы для одного токена будут выполняться только один раз"""
+        async with AsyncVkExecuteRequestPool() as pool:
+            result = pool.call(
+                "groups.isMember",
+                token1,
+                {"user_id": 1, "group_id": 1},
+            )
+            result2 = pool.call(
+                "groups.isMember",
+                token1,
+                {"user_id": 1, "group_id": 1},
+            )
+            result3 = pool.call(
+                "groups.isMember",
+                token1,
+                {"user_id": 1, "group_id": 1},
+            )
+            self.assertEqual(1, len(pool.pool[token1]))
+        self.assertIs(result, result2)
+        self.assertIs(result, result3)
