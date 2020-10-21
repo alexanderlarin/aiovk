@@ -68,7 +68,7 @@ class AsyncVkExecuteRequestPool:
             for methods_pool in chunks(calls, self.call_number_per_request):
                 executed_pools.append(VkExecuteMethodsPool(methods_pool).execute(api))
         await asyncio.gather(*executed_pools)
-        self.pool = []
+        self.pool.clear()
 
     def call(self, method, token, values=None) -> AsyncResult:
         """
