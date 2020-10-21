@@ -183,3 +183,40 @@ class ExecutePoolTestCase(IsolatedAsyncioTestCase):
             self.assertEqual(1, len(pool.pool[token1]))
         self.assertIs(result, result2)
         self.assertIs(result, result3)
+
+    async def test_invalid_token(self):
+        async with AsyncVkExecuteRequestPool() as pool:
+            result = pool.call(
+                "groups.isMember",
+                'invalid_token',
+                {"user_id": 1, "group_id": 1},
+            )
+        self.assertEqual(5, result.error["error_code"])
+        self.assertEqual("groups.isMember", result.error["method"])
+
+    async def test_invalid_call(self):
+        async with AsyncVkExecuteRequestPool() as pool:
+            result = pool.call(
+                "groups.isMember",
+                token1,
+                {"user_id": -1, "group_id": 1},
+            )
+        self.assertEqual(100, result.error['error_code'])
+
+    async def test_invalid_token_type(self):
+        """Вызов метода, который доступен только с токеном пользователя, с токеном группы"""
+        async with AsyncVkExecuteRequestPool() as pool:
+            result = pool.call(
+                "likes.isLiked",
+                token1,
+                {
+                    "user_id": 1,
+                    "owner_id": -1,
+                    "type": "post",
+                    "item_id": 396449,
+                },
+            )
+        self.assertIsNone(result.result)
+        self.assertIsNotNone(result.error)
+        self.assertEqual(27, result.error['error_code'])
+        self.assertEqual('likes.isLiked', result.error['method'])

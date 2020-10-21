@@ -4,7 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Dict, Optional
 
-from . import TokenSession, API
+from . import TokenSession, API, exceptions
 
 
 class AsyncResult:
@@ -108,8 +108,16 @@ class VkExecuteMethodsPool:
         """
         methods = [call.get_execute_representation() for call in self.pool]
         code = f"return [{','.join(methods)}];"
-        response = await api.execute(code=code, raw=True)
-
+        try:
+            response = await api.execute(code=code, raw=True)
+        except exceptions.VkAuthError as e:
+            for call in self.pool:
+                call.result.error = {
+                    'method': call.method,
+                    'error_code': 5,
+                    'error_msg': e.description
+                }
+            return
         errors = response.pop('execute_errors', [])[::-1]
         response = response['response']
 
