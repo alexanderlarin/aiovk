@@ -34,7 +34,7 @@ class VkCall:
     result: AsyncResult
 
     def get_execute_representation(self) -> str:
-        return f"API.{self.method}({json.dumps(self.values)})"
+        return f"API.{self.method}({json.dumps(self.values, ensure_ascii=False)})"
 
 
 class AsyncVkExecuteRequestPool:
