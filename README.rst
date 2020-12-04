@@ -211,6 +211,13 @@ Use Session object
     >>> await lp.get_pts(need_ts=True)  # return pts, ts
     191231223, 1820350345
 
+You can iterate over events
+
+.. code-block:: python
+   >>> async for event in lp.iter():
+   ...     print(event)
+   [...,...]
+
 Notice that ``wait`` value only for long pool connection.
 
 Real pause could be more ``wait`` time because of need time
@@ -242,6 +249,13 @@ Use Session object
     191231223
     >>> await lp.get_pts(need_ts=True)  # return pts, ts
     191231223, 1820350345
+
+BotsLongPoll supports iterating too
+
+.. code-block:: python
+   >>> async for event in lp.iter():
+   ...     print(event)
+   {"type":..., "object": {...}}
 
 Notice that ``wait`` value only for long pool connection.
 
