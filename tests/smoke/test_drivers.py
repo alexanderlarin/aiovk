@@ -9,7 +9,7 @@ from aiohttp import TCPConnector
 from aiohttp.test_utils import unittest_run_loop
 from yarl import URL
 
-from aiovk.drivers import Socks5Driver, HttpDriver
+import aiovk.drivers as drivers
 from tests.utils import AioTestCase, TEST_DIR
 from tests.smoke.utils import get_free_port, MockServerRequestHandler
 
@@ -118,7 +118,7 @@ class TestMethodsMixin:
 
 
 class HttpDirverTestCase(TestMethodsMixin, AioTestCase):
-    driver_class = HttpDriver
+    driver_class = drivers.HttpDriver
 
 
 class TestSocksConnector(TCPConnector):
@@ -128,21 +128,22 @@ class TestSocksConnector(TCPConnector):
         assert type(proxy_auth) == aiosocksy.Socks5Auth or proxy_auth is None
 
 
-@mock.patch('aiovk.drivers.Socks5Driver.connector', TestSocksConnector)
-class SOCKS5DriverANONTestCase(TestMethodsMixin, AioTestCase):
-    driver_class = Socks5Driver
-    driver_kwargs = {
-        "address": '127.0.0.1',
-        "port": get_free_port()
-    }
+if drivers.ProxyConnector is not None:
+    @mock.patch('aiovk.drivers.Socks5Driver.connector', TestSocksConnector)
+    class SOCKS5DriverANONTestCase(TestMethodsMixin, AioTestCase):
+        driver_class = drivers.Socks5Driver
+        driver_kwargs = {
+            "address": '127.0.0.1',
+            "port": get_free_port()
+        }
 
 
-@mock.patch('aiovk.drivers.Socks5Driver.connector', TestSocksConnector)
-class SOCKS5DriverAUTHTestCase(TestMethodsMixin, AioTestCase):
-    driver_class = Socks5Driver
-    driver_kwargs = {
-        "address": '127.0.0.1',
-        "port": get_free_port(),
-        "login": 'test',
-        "password": 'test'
-    }
+    @mock.patch('aiovk.drivers.Socks5Driver.connector', TestSocksConnector)
+    class SOCKS5DriverAUTHTestCase(TestMethodsMixin, AioTestCase):
+        driver_class = drivers.Socks5Driver
+        driver_kwargs = {
+            "address": '127.0.0.1',
+            "port": get_free_port(),
+            "login": 'test',
+            "password": 'test'
+        }
