@@ -1,8 +1,7 @@
 import aiohttp
 
 try:
-    import aiosocksy
-    from aiosocksy.connector import ProxyConnector
+    from aiohttp_socks.connector import ProxyConnector
 except ImportError as e:
     ProxyConnector = None
 
@@ -53,7 +52,6 @@ class HttpDriver(BaseDriver):
             self.session = session
 
     async def post_json(self, url, params, timeout=None):
-        # timeouts - https://docs.aiohttp.org/en/v3.0.0/client_quickstart.html#timeouts
         async with self.session.post(url, data=params, timeout=timeout or self.timeout) as response:
             return response.status, await response.json()
 
@@ -73,16 +71,16 @@ class HttpDriver(BaseDriver):
         await self.session.close()
 
 
-if ProxyConnector:
-    class Socks5Driver(HttpDriver):
-        connector = ProxyConnector
+class ProxyDriver(HttpDriver):
+    connector = ProxyConnector
 
-        def __init__(self, address, port, login=None, password=None, timeout=10, loop=None):
-            addr = aiosocksy.Socks5Addr(address, port)
-            if login and password:
-                auth = aiosocksy.Socks5Auth(login, password=password)
-            else:
-                auth = None
-            conn = self.connector(proxy=addr, proxy_auth=auth, loop=loop)
-            session = aiohttp.ClientSession(connector=conn)
-            super().__init__(timeout, loop, session)
+    def __init__(self, address, port, login=None, password=None, timeout=10, **kwargs):
+        connector = ProxyConnector(
+            host=address,
+            port=port,
+            username=login,
+            password=password,
+            **kwargs
+        )
+        session = aiohttp.ClientSession(connector=connector)
+        super().__init__(timeout, kwargs.get('loop'), session)

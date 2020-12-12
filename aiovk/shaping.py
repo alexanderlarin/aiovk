@@ -27,7 +27,3 @@ def wait_free_slot(func):
         await self._queue.get()
         return await func(self, *args, **kwargs)
     return wrapper
-
-
-def get_request_params(request_params):
-    return {param['key']: param['value'] for param in request_params}

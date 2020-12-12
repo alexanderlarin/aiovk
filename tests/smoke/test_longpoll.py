@@ -4,13 +4,12 @@ from http.server import HTTPServer
 from threading import Thread
 
 from aiohttp.test_utils import unittest_run_loop
+from proxy.common.utils import get_available_port
 
 from aiovk import API
 from aiovk.longpoll import LongPoll
-# from tests.auth_data import USER_LOGIN, USER_PASSWORD, APP_ID
 from tests.utils import AioTestCase, TEST_DIR
-from tests.smoke.utils import disable_cert_verification, VKRequestHandler, TestTokenSession, TestInternalAuthSession, \
-    get_free_port
+from tests.smoke.utils import disable_cert_verification, VKRequestHandler, TestTokenSession, TestInternalAuthSession
 
 
 class LongPollRealTestCase(AioTestCase):
@@ -18,7 +17,7 @@ class LongPollRealTestCase(AioTestCase):
     def setUpClass(cls):
         super().setUpClass()
         # Configure mock server.
-        cls.mock_server_port = get_free_port()
+        cls.mock_server_port = get_available_port()
         cls.mock_server = HTTPServer(('localhost', cls.mock_server_port), VKRequestHandler)
         cls.mock_server.socket = ssl.wrap_socket(cls.mock_server.socket, server_side=True,
                                                  certfile=os.path.join(TEST_DIR, 'certs', 'cert.pem'),

@@ -122,14 +122,6 @@ class TestInternalAuthSession(BaseUnittestSession, ImplicitSession):
     pass
 
 
-def get_free_port():
-    s = socket.socket(socket.AF_INET, type=socket.SOCK_STREAM)
-    s.bind(('localhost', 0))
-    address, port = s.getsockname()
-    s.close()
-    return port
-
-
 class MockServerRequestHandler(BaseHTTPRequestHandler):
     json_filepath = os.path.join(TEST_DIR, 'responses', "testdata.json")
 

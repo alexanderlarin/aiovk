@@ -2,19 +2,18 @@ import json
 import os
 from http.server import HTTPServer
 from threading import Thread
-from unittest import mock
 import asyncio
-import aiosocksy
-from aiohttp import TCPConnector
-from aiohttp.test_utils import unittest_run_loop
+from unittest import IsolatedAsyncioTestCase
+
+from proxy.common.utils import get_available_port
 from yarl import URL
 
 import aiovk.drivers as drivers
 from tests.utils import AioTestCase, TEST_DIR
-from tests.smoke.utils import get_free_port, MockServerRequestHandler
+from tests.smoke.utils import MockServerRequestHandler
 
 
-class TestMethodsMixin:
+class TestMethodsMixin(IsolatedAsyncioTestCase):
     driver_class = None
     json_filepath = os.path.join(TEST_DIR, 'responses', "testdata.json")
     driver_kwargs = {}
@@ -23,7 +22,7 @@ class TestMethodsMixin:
     def setUpClass(cls):
         super().setUpClass()
         # Configure mock server.
-        cls.mock_server_port = get_free_port()
+        cls.mock_server_port = get_available_port()
         cls.mock_server = HTTPServer(('localhost', cls.mock_server_port), MockServerRequestHandler)
 
         # Start running mock server in a separate thread.
@@ -43,11 +42,9 @@ class TestMethodsMixin:
             original = json.load(f)
         self.assertDictEqual(jsn, original)
 
-    @unittest_run_loop
     async def test_json_default_loop(self):
         await self.get_json()
 
-    @unittest_run_loop
     async def test_json_custom_loop(self):
         loop = asyncio.get_event_loop()
         await self.get_json(loop)
@@ -63,11 +60,9 @@ class TestMethodsMixin:
         self.assertEqual(text, original)
         self.assertEqual(redirect_url, URL(request_url))
 
-    @unittest_run_loop
     async def test_get_text_default_loop(self):
         await self.get_text()
 
-    @unittest_run_loop
     async def test_get_text_custom_loop(self):
         loop = asyncio.get_event_loop()
         await self.get_text(loop)
@@ -81,11 +76,9 @@ class TestMethodsMixin:
             original = f.read()
         self.assertEqual(text, original)
 
-    @unittest_run_loop
     async def test_get_bin_default_loop(self):
         await self.get_bin()
 
-    @unittest_run_loop
     async def test_get_bin_custom_loop(self):
         loop = asyncio.get_event_loop()
         await self.get_bin(loop)
@@ -107,11 +100,9 @@ class TestMethodsMixin:
         self.assertEqual(text, expected)
         self.assertEqual(redirect_url, URL(request_url))
 
-    @unittest_run_loop
     async def test_post_text_default_loop(self):
         await self.post_text()
 
-    @unittest_run_loop
     async def test_post_text_custom_loop(self):
         loop = asyncio.get_event_loop()
         await self.post_text(loop)
@@ -121,29 +112,29 @@ class HttpDirverTestCase(TestMethodsMixin, AioTestCase):
     driver_class = drivers.HttpDriver
 
 
-class TestSocksConnector(TCPConnector):
-    def __init__(self, proxy, proxy_auth, loop):
-        super().__init__(loop=loop)
-        assert type(proxy) == aiosocksy.Socks5Addr
-        assert type(proxy_auth) == aiosocksy.Socks5Auth or proxy_auth is None
-
-
 if drivers.ProxyConnector is not None:
-    @mock.patch('aiovk.drivers.Socks5Driver.connector', TestSocksConnector)
-    class SOCKS5DriverANONTestCase(TestMethodsMixin, AioTestCase):
-        driver_class = drivers.Socks5Driver
-        driver_kwargs = {
-            "address": '127.0.0.1',
-            "port": get_free_port()
-        }
+    import proxy
+    from python_socks import ProxyType
 
 
-    @mock.patch('aiovk.drivers.Socks5Driver.connector', TestSocksConnector)
-    class SOCKS5DriverAUTHTestCase(TestMethodsMixin, AioTestCase):
-        driver_class = drivers.Socks5Driver
-        driver_kwargs = {
-            "address": '127.0.0.1',
-            "port": get_free_port(),
-            "login": 'test',
-            "password": 'test'
-        }
+    class ProxyDriverANONTestCase(TestMethodsMixin, proxy.TestCase, IsolatedAsyncioTestCase):
+        driver_class = drivers.ProxyDriver
+
+        @property
+        def driver_kwargs(self):
+            return {
+                "address": '127.0.0.1',
+                "port": self.PROXY_PORT,
+                'proxy_type': ProxyType.HTTP,
+            }
+
+
+    # @mock.patch('aiovk.drivers.ProxyDriver.connector', TestSocksConnector)
+    # class ProxyDriverAUTHTestCase(TestMethodsMixin, AioTestCase):
+    #     driver_class = drivers.ProxyDriver
+    #     driver_kwargs = {
+    #         "address": '127.0.0.1',
+    #         "port": get_free_port(),
+    #         "login": 'test',
+    #         "password": 'test'
+    #     }

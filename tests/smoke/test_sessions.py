@@ -5,10 +5,11 @@ from http.server import HTTPServer
 from threading import Thread
 
 from aiohttp.test_utils import unittest_run_loop
+from proxy.common.utils import get_available_port
 
 from aiovk import ImplicitSession, TokenSession
 from aiovk.exceptions import VkAuthError
-from tests.smoke.utils import disable_cert_verification, VKRequestHandler, get_free_port
+from tests.smoke.utils import disable_cert_verification, VKRequestHandler
 from tests.utils import AioTestCase, TEST_DIR
 
 
@@ -17,7 +18,7 @@ class TokenSessionTestCase(AioTestCase):
     def setUpClass(cls):
         super().setUpClass()
         # Configure mock server.
-        cls.mock_server_port = get_free_port()
+        cls.mock_server_port = get_available_port()
         cls.mock_server = HTTPServer(('localhost', cls.mock_server_port), VKRequestHandler)
         cls.mock_server.socket = ssl.wrap_socket(cls.mock_server.socket, server_side=True,
                                                  certfile=os.path.join(TEST_DIR, 'certs', 'cert.pem'),
@@ -71,7 +72,7 @@ class ImplicitSessionTestCase(AioTestCase):
     def setUpClass(cls):
         super().setUpClass()
         # Configure mock server.
-        cls.mock_server_port = get_free_port()
+        cls.mock_server_port = get_available_port()
         cls.mock_server = HTTPServer(('localhost', cls.mock_server_port), VKRequestHandler)
         cls.mock_server.socket = ssl.wrap_socket(cls.mock_server.socket, server_side=True,
                                                  certfile=os.path.join(TEST_DIR, 'certs', 'cert.pem'),

@@ -1,3 +1,6 @@
 -r requirements.txt
-jinja2==2.10.1
-pyotp==2.2.7
+jinja2==2.11.2
+pyotp==2.4.1
+proxy.py==2.2.0
+pytest==6.1.2
+pytest-asyncio==0.14.0

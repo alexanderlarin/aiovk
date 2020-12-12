@@ -109,9 +109,9 @@ Drivers
 
 .. code-block:: python
 
-    >>> driver = Socks5Driver(PROXY_ADDRESS, PORT)  # 1234 is port
-    >>> driver = Socks5Driver(PROXY_ADDRESS, PORT, timeout=10)
-    >>> driver = Socks5Driver(PROXY_ADDRESS, PORT, PROXY_LOGIN, PROXY_PASSWORD, timeout=10)
+    >>> driver = ProxyDriver(PROXY_ADDRESS, PORT)  # 1234 is port
+    >>> driver = ProxyDriver(PROXY_ADDRESS, PORT, timeout=10)
+    >>> driver = ProxyDriver(PROXY_ADDRESS, PORT, PROXY_LOGIN, PROXY_PASSWORD, timeout=10)
 
 How to use custom driver with session:
 
@@ -125,7 +125,7 @@ How to use driver with own loop:
 
     >>> loop = asyncio.get_event_loop()
     >>> asyncio.set_event_loop(None)
-    >>> session = TokenSession(driver=HttpDriver(loop=loop))  # or Socks5Driver
+    >>> session = TokenSession(driver=HttpDriver(loop=loop))  # or ProxyDriver
 
 How to use driver with custom http session object:
 
