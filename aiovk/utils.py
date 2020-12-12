@@ -18,7 +18,7 @@ class TaskQueue(asyncio.Queue):
             for i in range(maxsize - self.qsize()):
                 self.put_nowait(1)
 
-    def canel(self):
+    def cancel(self):
         self.task.cancel()
 
 
