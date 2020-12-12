@@ -68,7 +68,8 @@ class TokenSession(BaseSession):
             params = {}
         if self.access_token:
             params['access_token'] = self.access_token
-        params['v'] = self.API_VERSION
+        if 'v' not in params:
+            params['v'] = self.API_VERSION
 
         # Send request
         _, response = await self.driver.post_json(self.REQUEST_URL + method_name, params, timeout)
