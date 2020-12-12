@@ -10,13 +10,20 @@ from tests.utils import AioTestCase
 
 class TestDriver(BaseDriver):
     counter = 0
-    message = {}
+    message = None
+    original_event = {"type": "group_join", "object": {"user_id": 1, "join_type": "approved"}, "group_id": 1}
 
     async def get_text(self, url, params, timeout=None):
+        second_message = json.dumps({'ts': -TestSession.TS, 'updates': [self.original_event]})
         if self.counter > 5:
             self.counter = 0
-            return 200, json.dumps({'ts': -TestSession.TS}), url
+            return 200, second_message, url
+
         self.counter += 1
+
+        if self.message is None:
+            return 200, second_message, url
+
         return 200, json.dumps(self.message), url
 
 
@@ -88,7 +95,7 @@ class LongPollTestCase(AioTestCase):
         lp = LongPoll(session, mode=0)
 
         response = await lp.wait()
-        self.assertDictEqual(response, {'ts': -TestSession.TS})
+        self.assertDictEqual(response, {'ts': -TestSession.TS, 'updates': [TestDriver.original_event]})
 
     @unittest_run_loop
     async def test_wait_error_code_2(self):
@@ -97,7 +104,7 @@ class LongPollTestCase(AioTestCase):
         lp = LongPoll(session, mode=0)
 
         response = await lp.wait()
-        self.assertDictEqual(response, {'ts': -TestSession.TS})
+        self.assertDictEqual(response, {'ts': -TestSession.TS, 'updates': [TestDriver.original_event]})
 
     @unittest_run_loop
     async def test_wait_error_code_3(self):
@@ -106,7 +113,7 @@ class LongPollTestCase(AioTestCase):
         lp = LongPoll(session, mode=0)
 
         response = await lp.wait()
-        self.assertDictEqual(response, {'ts': -TestSession.TS})
+        self.assertDictEqual(response, {'ts': -TestSession.TS, 'updates': [TestDriver.original_event]})
 
     @unittest_run_loop
     async def test_wait_error_code_4(self):
@@ -116,3 +123,53 @@ class LongPollTestCase(AioTestCase):
 
         with self.assertRaises(VkLongPollError):
             await lp.wait()
+
+    @unittest_run_loop
+    async def test_iter_valid(self):
+        TestDriver.message = None
+        session = API(TestSession())
+        lp = LongPoll(session, mode=0)
+
+        async for event in lp.iter():
+            self.assertDictEqual(event, TestDriver.original_event)
+            break
+
+    @unittest_run_loop
+    async def test_iter_error_code_1(self):
+        TestDriver.message = {'failed': 1, 'ts': 42}
+        session = API(TestSession())
+        lp = LongPoll(session, mode=0)
+
+        async for event in lp.iter():
+            self.assertDictEqual(event, TestDriver.original_event)
+            break
+
+    @unittest_run_loop
+    async def test_iter_error_code_2(self):
+        TestDriver.message = {'failed': 2}
+        session = API(TestSession())
+        lp = LongPoll(session, mode=0)
+
+        async for event in lp.iter():
+            self.assertDictEqual(event, TestDriver.original_event)
+            break
+
+    @unittest_run_loop
+    async def test_iter_error_code_3(self):
+        TestDriver.message = {'failed': 3}
+        session = API(TestSession())
+        lp = LongPoll(session, mode=0)
+
+        async for event in lp.iter():
+            self.assertDictEqual(event, TestDriver.original_event)
+            break
+
+    @unittest_run_loop
+    async def test_iter_error_code_4(self):
+        TestDriver.message = {'failed': 4}
+        session = API(TestSession())
+        lp = LongPoll(session, mode=0)
+
+        with self.assertRaises(VkLongPollError):
+            async for event in lp.iter():
+                pass
