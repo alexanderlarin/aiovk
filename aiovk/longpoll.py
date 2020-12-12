@@ -87,6 +87,12 @@ class BaseLongPoll(ABC):
             self.base_url = None
 
         return await self.wait()
+    
+    async def iter(self):
+        while True:
+            updates = await self.wait()
+            for event in updates["updates"]:
+                yield event
 
     async def get_pts(self, need_ts=False):
         if not self.base_url or not self.pts:
