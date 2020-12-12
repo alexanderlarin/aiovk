@@ -214,9 +214,10 @@ Use Session object
 You can iterate over events
 
 .. code-block:: python
-   >>> async for event in lp.iter():
-   ...     print(event)
-   [...,...]
+
+    >>> async for event in lp.iter():
+    ...     print(event)
+    {"type":..., "object": {...}}
 
 Notice that ``wait`` value only for long pool connection.
 
@@ -232,7 +233,7 @@ Use exist API object
 .. code-block:: python
 
     >>> api = API(session)
-    >>> lp = BotsLongPoll(api, mode=2, group_id=1)  # default wait=25
+    >>> lp = BotsLongPoll(api, group_id=1)  # default wait=25
     >>> await lp.wait()
     {"ts":345,"updates":[...]}
     >>> await lp.wait()
@@ -242,7 +243,7 @@ Use Session object
 
 .. code-block:: python
 
-    >>> lp = BotsLongPoll(session, mode=2, group_id=1)  # default wait=25
+    >>> lp = BotsLongPoll(session, group_id=1)  # default wait=25
     >>> await lp.wait()
     {"ts":78455,"updates":[...]}
     >>> await lp.get_pts()  # return pts
@@ -253,9 +254,10 @@ Use Session object
 BotsLongPoll supports iterating too
 
 .. code-block:: python
-   >>> async for event in lp.iter():
-   ...     print(event)
-   {"type":..., "object": {...}}
+
+    >>> async for event in lp.iter():
+    ...     print(event)
+    {"type":..., "object": {...}}
 
 Notice that ``wait`` value only for long pool connection.
 
