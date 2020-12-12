@@ -3,6 +3,7 @@
 # auth data
 /tests/auth_data.py
 /tests/captcha.jpg
+.pytest_cache/
 
 ### Python template
 # Byte-compiled / optimized / DLL files

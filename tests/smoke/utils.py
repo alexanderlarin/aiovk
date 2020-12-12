@@ -120,25 +120,3 @@ class TestTokenSession(BaseUnittestSession, TokenSession):
 
 class TestInternalAuthSession(BaseUnittestSession, ImplicitSession):
     pass
-
-
-class MockServerRequestHandler(BaseHTTPRequestHandler):
-    json_filepath = os.path.join(TEST_DIR, 'responses', "testdata.json")
-
-    def log_message(self, format, *args):
-        # Disable logging
-        return
-
-    def do_GET(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-        with open(self.json_filepath) as f:
-            self.wfile.write(f.read().encode())
-
-    def do_POST(self):
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
-        with open(self.json_filepath) as f:
-            self.wfile.write(f.read().encode())

@@ -4,3 +4,4 @@ pyotp==2.4.1
 proxy.py==2.2.0
 pytest==6.1.2
 pytest-asyncio==0.14.0
+pytest-aiohttp==0.3.0
