@@ -19,7 +19,7 @@ class TaskQueueTestCase(AioTestCase):
         self.assertEqual(q.qsize(), size)
         await asyncio.sleep(period + 1)
         self.assertEqual(q.qsize(), size)
-        q.canel()
+        q.cancel()
 
     @unittest_run_loop
     async def test_get_elem_and_pause(self):
@@ -31,7 +31,7 @@ class TaskQueueTestCase(AioTestCase):
         self.assertEqual(q.qsize(), size - 1)
         await asyncio.sleep(period + 1)
         self.assertEqual(q.qsize(), size)
-        q.canel()
+        q.cancel()
 
     @unittest_run_loop
     async def test_get_all_plus_one_elem(self):
@@ -47,7 +47,7 @@ class TaskQueueTestCase(AioTestCase):
 
         self.assertEqual(math.floor(stop - start), period)
         self.assertEqual(q.qsize(), 0)
-        q.canel()
+        q.cancel()
 
 
 class WaitFreeSlotTestCase(AioTestCase):
@@ -65,7 +65,7 @@ class WaitFreeSlotTestCase(AioTestCase):
 
         await foo(obj)
         self.assertEqual(q.qsize(), size - 1)
-        q.canel()
+        q.cancel()
 
     @unittest_run_loop
     async def test_with_pause(self):
@@ -86,4 +86,4 @@ class WaitFreeSlotTestCase(AioTestCase):
 
         self.assertEqual(math.floor(stop - start), period)
         self.assertEqual(q.qsize(), 0)
-        q.canel()
+        q.cancel()

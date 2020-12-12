@@ -27,7 +27,7 @@ class LimitRateDriverMixin:
 
     async def close(self):
         await super().close()
-        self._queue.canel()
+        self._queue.cancel()
 
 
 class SimpleImplicitSessionMixin:
