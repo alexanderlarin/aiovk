@@ -263,3 +263,32 @@ Notice that ``wait`` value only for long pool connection.
 
 Real pause could be more ``wait`` time because of need time
 for authorization (if needed), reconnect and etc.
+
+Async execute request pool
+--------------
+For documentation, see: https://vk.com/dev/execute
+
+
+.. code-block:: python
+
+    from aiovk.pools import AsyncVkExecuteRequestPool
+
+    async with AsyncVkExecuteRequestPool() as pool:
+        response = pool.call('users.get', 'YOUR_TOKEN', {'user_ids': 1})
+        response2 = pool.call('users.get', 'YOUR_TOKEN', {'user_ids': 2})
+        response3 = pool.call('users.get', 'ANOTHER_TOKEN', {'user_ids': 1})
+        response4 = pool.call('users.get', 'ANOTHER_TOKEN', {'user_ids': -1})
+
+    >>> print(response.ok)
+    True
+    >>> print(response.result)
+    [{'id': 1, 'first_name': 'Павел', 'last_name': 'Дуров'}]
+    >>> print(response2.result)
+    [{'id': 2, 'first_name': 'Александра', 'last_name': 'Владимирова'}]
+    >>> print(response3.result)
+    [{'id': 1, 'first_name': 'Павел', 'last_name': 'Дуров'}]
+    >>> print(response4.ok)
+    False
+    >>> print(response4.error)
+    {'method': 'users.get', 'error_code': 113, 'error_msg': 'Invalid user id'}
+
