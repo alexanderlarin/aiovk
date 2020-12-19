@@ -4,7 +4,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Dict, Optional
 
-from . import TokenSession, API, exceptions
+from aiovk import TokenSession, API
+from aiovk.exceptions import VkAuthError
 
 
 class AsyncResult:
@@ -30,19 +31,21 @@ class AsyncResult:
 @dataclass
 class VkCall:
     method: str
-    values: dict
+    method_args: dict
     result: AsyncResult
 
     def get_execute_representation(self) -> str:
-        return f"API.{self.method}({json.dumps(self.values, ensure_ascii=False)})"
+        return f"API.{self.method}({json.dumps(self.method_args, ensure_ascii=False)})"
 
 
 class AsyncVkExecuteRequestPool:
-    """Позволяет объединять обращений к api с использованием одного токена
-    в группы и выполнять каждую группу обращений за один запрос с использованием
-    метода execute"""
+    """
+    Allows concatenation of api calls using one token into groups and execute each group of hits in
+    one request using `execute` method
+    """
 
-    def __init__(self, call_number_per_request=25):
+    def __init__(self, call_number_per_request=25, token_session_class=TokenSession):
+        self.token_session_class = token_session_class
         self.call_number_per_request = call_number_per_request
         self.pool: Dict[str, List[VkCall]] = defaultdict(list)
         self.sessions = []
@@ -52,45 +55,51 @@ class AsyncVkExecuteRequestPool:
 
     async def __aexit__(self, *args, **kwargs):
         await self.execute()
-        await asyncio.gather(*[session.close() for session in self.sessions])
 
     async def execute(self):
+        try:
+            await self._execute()
+            await asyncio.gather(*[session.close() for session in self.sessions])
+        finally:
+            self.pool.clear()
+            self.sessions.clear()
+
+    async def _execute(self):
         """
-        Группирует обращения и выполняет их с помощью метода execute, после
-        выполнения пул очищается.
+        Groups hits and executes them using the execute method, after execution the pool is cleared
         """
         executed_pools = []
         for token, calls in self.pool.items():
-            session = TokenSession(token)
+            session = self.token_session_class(token)
             self.sessions.append(session)
             api = API(session)
 
             for methods_pool in chunks(calls, self.call_number_per_request):
                 executed_pools.append(VkExecuteMethodsPool(methods_pool).execute(api))
         await asyncio.gather(*executed_pools)
-        self.pool.clear()
 
-    def call(self, method, token, values=None) -> AsyncResult:
+    def add_call(self, method, token, method_args=None) -> AsyncResult:
         """
-        Добавляет вызов метода api в пул
-        :param method: название метода api vk
-        :param token: токен для выполнения запроса
-        :param values: параметры
-        :return: объект, который будет содержать результат после закрытия пула
+        Adds an any api method call to the execute pool
+
+        :param method: api vk method name
+        :param token: session token
+        :param method_args: params
+        :return: object that will contain the result after the pool is closed
         """
-        if values is None:
-            values = {}
+        if method_args is None:
+            method_args = {}
 
         result = None
         # searching already added calls with equal token, method and values
         for call in self.pool[token]:
-            if call.method == method and call.values == values:
+            if call.method == method and call.method_args == method_args:
                 result = call.result
                 break
         if result:
             return result
         result = AsyncResult()
-        self.pool[token].append(VkCall(method=method, values=values, result=result))
+        self.pool[token].append(VkCall(method=method, method_args=method_args, result=result))
         return result
 
 
@@ -102,15 +111,15 @@ class VkExecuteMethodsPool:
 
     async def execute(self, api: API):
         """
-        Выполняет обращения в pool методом execute и сохраняет результаты
-        для каждого обращения
-        :param api: объект API для выполнения запроса
+        Executes calls to the pool using the execute method and stores the results for each call
+
+        :param api: API object to make the request
         """
         methods = [call.get_execute_representation() for call in self.pool]
         code = f"return [{','.join(methods)}];"
         try:
-            response = await api.execute(code=code, raw=True)
-        except exceptions.VkAuthError as e:
+            response = await api.execute(code=code, raw_response=True)
+        except VkAuthError as e:
             for call in self.pool:
                 call.result.error = {
                     'method': call.method,

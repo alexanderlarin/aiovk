@@ -8,13 +8,13 @@ Features
 * support python 3.5+ versions
 * have only one dependency - ``aiohttp 3+``
 * support two-factor authentication
-* support socks proxy with ``aiosocksy``
+* support socks proxy with ``aiohttp-socks``
 * support rate limit of requests
 * support Long Poll connection
 
 TODO
 ----
-* replace ``aiosocksy`` to ``aiohttp-socks``
+* need refactoring tests for ``AsyncVkExecuteRequestPool``
 
 Install
 -------
@@ -268,16 +268,15 @@ Async execute request pool
 --------------
 For documentation, see: https://vk.com/dev/execute
 
-
 .. code-block:: python
 
     from aiovk.pools import AsyncVkExecuteRequestPool
 
     async with AsyncVkExecuteRequestPool() as pool:
-        response = pool.call('users.get', 'YOUR_TOKEN', {'user_ids': 1})
-        response2 = pool.call('users.get', 'YOUR_TOKEN', {'user_ids': 2})
-        response3 = pool.call('users.get', 'ANOTHER_TOKEN', {'user_ids': 1})
-        response4 = pool.call('users.get', 'ANOTHER_TOKEN', {'user_ids': -1})
+        response = pool.add_call('users.get', 'YOUR_TOKEN', {'user_ids': 1})
+        response2 = pool.add_call('users.get', 'YOUR_TOKEN', {'user_ids': 2})
+        response3 = pool.add_call('users.get', 'ANOTHER_TOKEN', {'user_ids': 1})
+        response4 = pool.add_call('users.get', 'ANOTHER_TOKEN', {'user_ids': -1})
 
     >>> print(response.ok)
     True
@@ -292,3 +291,16 @@ For documentation, see: https://vk.com/dev/execute
     >>> print(response4.error)
     {'method': 'users.get', 'error_code': 113, 'error_msg': 'Invalid user id'}
 
+or
+
+.. code-block:: python
+
+    from aiovk.pools import AsyncVkExecuteRequestPool
+
+    pool = AsyncVkExecuteRequestPool()
+    response = pool.add_call('users.get', 'YOUR_TOKEN', {'user_ids': 1})
+    response2 = pool.add_call('users.get', 'YOUR_TOKEN', {'user_ids': 2})
+    response3 = pool.add_call('users.get', 'ANOTHER_TOKEN', {'user_ids': 1})
+    response4 = pool.add_call('users.get', 'ANOTHER_TOKEN', {'user_ids': -1})
+    await pool.execute()
+    ...

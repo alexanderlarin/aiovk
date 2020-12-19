@@ -26,13 +26,15 @@ class BaseSession(ABC):
         """Perform the actions associated with the completion of the current session"""
 
     @abstractmethod
-    async def send_api_request(self, method_name: str, params: dict = None, timeout: int = None, raw: bool = False) -> dict:
+    async def send_api_request(self, method_name: str, params: dict = None, timeout: int = None,
+                               raw_response: bool = False) -> dict:
         """Method that use API instance for sending request to vk server
 
         :param method_name: any value from the left column of the methods table from `https://vk.com/dev/methods`
         :param params: dict of params that available for current method.
                        For example see `Parameters` block from: `https://vk.com/dev/account.getInfo`
         :param timeout: timeout for response from the server
+        :param raw_response: return full response
         :return: dict that contain data from `Result` block. Example see here: `https://vk.com/dev/account.getInfo`
         """
 
@@ -60,7 +62,8 @@ class TokenSession(BaseSession):
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return await self.close()
 
-    async def send_api_request(self, method_name: str, params: dict = None, timeout: int = None, raw: bool = False) -> dict:
+    async def send_api_request(self, method_name: str, params: dict = None, timeout: int = None,
+                               raw_response: bool = False) -> dict:
         # Prepare request
         if not timeout:
             timeout = self.timeout
@@ -87,18 +90,18 @@ class TokenSession(BaseSession):
                 params['captcha_sid'] = captcha_sid
                 # Send request again
                 # Provide one attempt to repeat the request
-                return await self.send_api_request(method_name, params, timeout, raw)
+                return await self.send_api_request(method_name, params, timeout, raw_response)
             elif err_code == AUTHORIZATION_FAILED:
                 await self.authorize()
                 # Send request again
                 # Provide one attempt to repeat the request
-                return await self.send_api_request(method_name, params, timeout, raw)
+                return await self.send_api_request(method_name, params, timeout, raw_response)
             else:
                 # Other errors is not related with security
                 raise VkAPIError(error, self.REQUEST_URL + method_name)
-        # Must return only useful data
-        if raw:
+        if raw_response:
             return response
+        # Return only useful data
         return response['response']
 
     async def authorize(self) -> None:

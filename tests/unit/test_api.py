@@ -11,7 +11,7 @@ class TestSession(BaseSession):
     async def __aenter__(self):
         pass
 
-    async def send_api_request(self, method_name, params=None, timeout=None):
+    async def send_api_request(self, method_name, params=None, timeout=None, raw_response=None):
         out = {
             'method_name': method_name,
             'params': params,
