@@ -43,5 +43,6 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords='vk.com api vk wrappper asyncio',
-    test_suite="tests"
+    test_suite="tests",
+    python_requires='>=3.6'
 )
