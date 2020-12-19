@@ -1,5 +1,6 @@
 import json
 from abc import ABC, abstractmethod
+from typing import Tuple
 from urllib.parse import parse_qsl
 
 from yarl import URL
@@ -25,13 +26,15 @@ class BaseSession(ABC):
         """Perform the actions associated with the completion of the current session"""
 
     @abstractmethod
-    async def send_api_request(self, method_name: str, params: dict = None, timeout: int = None) -> dict:
+    async def send_api_request(self, method_name: str, params: dict = None, timeout: int = None,
+                               raw_response: bool = False) -> dict:
         """Method that use API instance for sending request to vk server
 
         :param method_name: any value from the left column of the methods table from `https://vk.com/dev/methods`
         :param params: dict of params that available for current method.
                        For example see `Parameters` block from: `https://vk.com/dev/account.getInfo`
         :param timeout: timeout for response from the server
+        :param raw_response: return full response
         :return: dict that contain data from `Result` block. Example see here: `https://vk.com/dev/account.getInfo`
         """
 
@@ -59,7 +62,8 @@ class TokenSession(BaseSession):
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         return await self.close()
 
-    async def send_api_request(self, method_name: str, params: dict = None, timeout: int = None) -> dict:
+    async def send_api_request(self, method_name: str, params: dict = None, timeout: int = None,
+                               raw_response: bool = False) -> dict:
         # Prepare request
         if not timeout:
             timeout = self.timeout
@@ -67,10 +71,11 @@ class TokenSession(BaseSession):
             params = {}
         if self.access_token:
             params['access_token'] = self.access_token
-        params['v'] = self.API_VERSION
+        if 'v' not in params:
+            params['v'] = self.API_VERSION
 
         # Send request
-        response = await self.driver.json(self.REQUEST_URL + method_name, params, timeout)
+        _, response = await self.driver.post_json(self.REQUEST_URL + method_name, params, timeout)
 
         # Process response
         # Checking the section with errors
@@ -85,16 +90,18 @@ class TokenSession(BaseSession):
                 params['captcha_sid'] = captcha_sid
                 # Send request again
                 # Provide one attempt to repeat the request
-                return await self.send_api_request(method_name, params, timeout)
+                return await self.send_api_request(method_name, params, timeout, raw_response)
             elif err_code == AUTHORIZATION_FAILED:
                 await self.authorize()
                 # Send request again
                 # Provide one attempt to repeat the request
-                return await self.send_api_request(method_name, params, timeout)
+                return await self.send_api_request(method_name, params, timeout, raw_response)
             else:
                 # Other errors is not related with security
                 raise VkAPIError(error, self.REQUEST_URL + method_name)
-        # Must return only useful data
+        if raw_response:
+            return response
+        # Return only useful data
         return response['response']
 
     async def authorize(self) -> None:
@@ -146,12 +153,15 @@ class ImplicitSession(TokenSession):
 
     async def authorize(self) -> None:
         """Getting a new token from server"""
-        html = await self._get_auth_page()
-        url = URL('/authorize?email')
+        url, html = await self._get_auth_page()
         for step in range(self.num_of_attempts):
-            if url.path == '/authorize' and 'email' in url.query:
-                # Invalid login or password  and 'email' in q.query
-                url, html = await self._process_auth_form(html)
+            if url.path == '/authorize':
+                if '__q_hash' in url.query:
+                    # Give rights for app
+                    url, html = await self._process_access_form(html)
+                else:
+                    # Invalid login or password  and 'email' in q.query
+                    url, html = await self._process_auth_form(html)
             if url.path == '/login' and url.query.get('act', '') == 'authcheck':
                 # Entering 2auth code
                 url, html = await self._process_2auth_form(html)
@@ -168,10 +178,10 @@ class ImplicitSession(TokenSession):
                 return
         raise VkAuthError('Something went wrong', 'Exceeded the number of attempts to log in')
 
-    async def _get_auth_page(self) -> str:
+    async def _get_auth_page(self) -> Tuple[str, str]:
         """
         Get authorization mobile page without js
-        :return: html page
+        :return: redirect_url, html page
         """
         # Prepare request
         params = {
@@ -185,13 +195,13 @@ class ImplicitSession(TokenSession):
             params['scope'] = self.scope
 
         # Send request
-        status, response = await self.driver.get_text(self.AUTH_URL, params)
+        status, response, redirect_url = await self.driver.get_text(self.AUTH_URL, params)
 
         # Process response
         if status != 200:
             error_dict = json.loads(response)
             raise VkAuthError(error_dict['error'], error_dict['error_description'], self.AUTH_URL, params)
-        return response
+        return redirect_url, response
 
     async def _process_auth_form(self, html: str) -> (str, str):
         """
@@ -221,8 +231,8 @@ class ImplicitSession(TokenSession):
             form_url = "https://m.vk.com{}".format(form_url)
 
         # Send request
-        url, html = await self.driver.post_text(form_url, form_data)
-        return url, html
+        _, html, redirect_url = await self.driver.post_text(form_url, form_data)
+        return redirect_url, html
 
     async def _process_2auth_form(self, html: str) -> (str, str):
         """
@@ -245,8 +255,8 @@ class ImplicitSession(TokenSession):
         form_data['code'] = await self.enter_confirmation_code()
 
         # Send request
-        url, html = await self.driver.post_text(form_url, form_data)
-        return url, html
+        _, html, redirect_url = await self.driver.post_text(form_url, form_data)
+        return redirect_url, html
 
     async def _process_access_form(self, html: str) -> (str, str):
         """
@@ -264,8 +274,8 @@ class ImplicitSession(TokenSession):
         form_data = dict(p.inputs)
 
         # Send request
-        url, html = await self.driver.post_text(form_url, form_data)
-        return url, html
+        _, html, redirect_url = await self.driver.post_text(form_url, form_data)
+        return redirect_url, html
 
     async def enter_confirmation_code(self) -> str:
         """
@@ -306,7 +316,7 @@ class AuthorizationCodeSession(TokenSession):
             'redirect_uri': self.redirect_uri,
             'code': code
         }
-        response = await self.driver.json(self.CODE_URL, params, self.timeout)
+        _, response = await self.driver.post_json(self.CODE_URL, params, self.timeout)
         if 'error' in response:
             raise VkAuthError(response['error'], response['error_description'], self.CODE_URL, params)
         self.access_token = response['access_token']

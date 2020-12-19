@@ -1,5 +1,6 @@
 import json
 from abc import ABC, abstractmethod
+from typing import Union, Optional
 
 from aiovk import API
 from aiovk.api import LazyAPI
@@ -8,7 +9,8 @@ from aiovk.exceptions import VkLongPollError
 
 class BaseLongPoll(ABC):
     """Interface for all types of Longpoll API"""
-    def __init__(self, session_or_api, mode: int or list, wait: int=25, version: int=2, timeout: int=None):
+    def __init__(self, session_or_api, mode: Optional[Union[int, list]],
+                 wait: int = 25, version: int = 2, timeout: int = None):
         """
         :param session_or_api: session object or data for creating a new session
         :type session_or_api: BaseSession or API or LazyAPI
@@ -30,16 +32,19 @@ class BaseLongPoll(ABC):
         self.base_params = {
             'version': version,
             'wait': wait,
-            'mode': mode,
             'act': 'a_check'
         }
+
+        if mode is not None:
+            self.base_params['mode'] = mode
+
         self.pts = None
         self.ts = None
         self.key = None
         self.base_url = None
 
     @abstractmethod
-    async def _get_long_poll_server(self, need_pts: bool=False) -> None:
+    async def _get_long_poll_server(self, need_pts: bool = False) -> None:
         """Send *.getLongPollServer request and update internal data
 
         :param need_pts: need return the pts field
@@ -59,12 +64,12 @@ class BaseLongPoll(ABC):
         }
         params.update(self.base_params)
         # invalid mimetype from server
-        code, response = await self.api._session.driver.get_text(
+        status, response, _ = await self.api._session.driver.get_text(
             self.base_url, params,
             timeout=2 * self.base_params['wait']
         )
 
-        if code == 403:
+        if status == 403:
             raise VkLongPollError(403, 'smth weth wrong', self.base_url + '/', params)
 
         response = json.loads(response)
@@ -87,6 +92,12 @@ class BaseLongPoll(ABC):
             self.base_url = None
 
         return await self.wait()
+    
+    async def iter(self):
+        while True:
+            response = await self.wait()
+            for event in response['updates']:
+                yield event
 
     async def get_pts(self, need_ts=False):
         if not self.base_url or not self.pts:
@@ -99,6 +110,8 @@ class BaseLongPoll(ABC):
 
 class UserLongPoll(BaseLongPoll):
     """Implements https://vk.com/dev/using_longpoll"""
+    # False for testing
+    use_https = True
 
     async def _get_long_poll_server(self, need_pts=False):
         response = await self.api('messages.getLongPollServer', need_pts=int(need_pts), timeout=self.timeout)
@@ -106,7 +119,7 @@ class UserLongPoll(BaseLongPoll):
         self.ts = response['ts']
         self.key = response['key']
         # fucking differences between long poll methods in vk api!
-        self.base_url = 'https://{}'.format(response['server'])
+        self.base_url = f'http{"s" if self.use_https else ""}://{response["server"]}'
 
 
 class LongPoll(UserLongPoll):
@@ -118,8 +131,8 @@ class LongPoll(UserLongPoll):
     
 class BotsLongPoll(BaseLongPoll):
     """Implements https://vk.com/dev/bots_longpoll"""
-    def __init__(self, session_or_api, mode, group_id, wait=25, version=1, timeout=None):
-        super().__init__(session_or_api, mode, wait, version, timeout)
+    def __init__(self, session_or_api, group_id, wait=25, version=1, timeout=None):
+        super().__init__(session_or_api, None, wait, version, timeout)
         self.group_id = group_id
 
     async def _get_long_poll_server(self, need_pts=False):

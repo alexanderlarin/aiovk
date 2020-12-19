@@ -1,12 +1,2 @@
-aiohttp>=3.2.0
-aiosocksy==0.1.2
-appdirs==1.4.3
-async-timeout==2.0.1
-chardet==3.0.4
-idna==2.6
-idna-ssl==1.0.1
-multidict==4.1.0
-packaging==16.8
-pyparsing==2.2.0
-six==1.10.0
-yarl==1.1.1
+aiohttp>=3.7.3
+aiohttp-socks>=0.5.5

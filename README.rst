@@ -8,13 +8,13 @@ Features
 * support python 3.5+ versions
 * have only one dependency - ``aiohttp 3+``
 * support two-factor authentication
-* support socks proxy with ``aiosocksy``
+* support socks proxy with ``aiohttp-socks``
 * support rate limit of requests
 * support Long Poll connection
 
 TODO
 ----
-* replace ``aiosocksy`` to ``aiohttp-socks``
+* need refactoring tests for ``AsyncVkExecuteRequestPool``
 
 Install
 -------
@@ -109,9 +109,9 @@ Drivers
 
 .. code-block:: python
 
-    >>> driver = Socks5Driver(PROXY_ADDRESS, PORT)  # 1234 is port
-    >>> driver = Socks5Driver(PROXY_ADDRESS, PORT, timeout=10)
-    >>> driver = Socks5Driver(PROXY_ADDRESS, PORT, PROXY_LOGIN, PROXY_PASSWORD, timeout=10)
+    >>> driver = ProxyDriver(PROXY_ADDRESS, PORT)  # 1234 is port
+    >>> driver = ProxyDriver(PROXY_ADDRESS, PORT, timeout=10)
+    >>> driver = ProxyDriver(PROXY_ADDRESS, PORT, PROXY_LOGIN, PROXY_PASSWORD, timeout=10)
 
 How to use custom driver with session:
 
@@ -125,7 +125,7 @@ How to use driver with own loop:
 
     >>> loop = asyncio.get_event_loop()
     >>> asyncio.set_event_loop(None)
-    >>> session = TokenSession(driver=HttpDriver(loop=loop))  # or Socks5Driver
+    >>> session = TokenSession(driver=HttpDriver(loop=loop))  # or ProxyDriver
 
 How to use driver with custom http session object:
 
@@ -211,6 +211,14 @@ Use Session object
     >>> await lp.get_pts(need_ts=True)  # return pts, ts
     191231223, 1820350345
 
+You can iterate over events
+
+.. code-block:: python
+
+    >>> async for event in lp.iter():
+    ...     print(event)
+    {"type":..., "object": {...}}
+
 Notice that ``wait`` value only for long pool connection.
 
 Real pause could be more ``wait`` time because of need time
@@ -225,7 +233,7 @@ Use exist API object
 .. code-block:: python
 
     >>> api = API(session)
-    >>> lp = BotsLongPoll(api, mode=2, group_id=1)  # default wait=25
+    >>> lp = BotsLongPoll(api, group_id=1)  # default wait=25
     >>> await lp.wait()
     {"ts":345,"updates":[...]}
     >>> await lp.wait()
@@ -235,7 +243,7 @@ Use Session object
 
 .. code-block:: python
 
-    >>> lp = BotsLongPoll(session, mode=2, group_id=1)  # default wait=25
+    >>> lp = BotsLongPoll(session, group_id=1)  # default wait=25
     >>> await lp.wait()
     {"ts":78455,"updates":[...]}
     >>> await lp.get_pts()  # return pts
@@ -243,7 +251,56 @@ Use Session object
     >>> await lp.get_pts(need_ts=True)  # return pts, ts
     191231223, 1820350345
 
+BotsLongPoll supports iterating too
+
+.. code-block:: python
+
+    >>> async for event in lp.iter():
+    ...     print(event)
+    {"type":..., "object": {...}}
+
 Notice that ``wait`` value only for long pool connection.
 
 Real pause could be more ``wait`` time because of need time
 for authorization (if needed), reconnect and etc.
+
+Async execute request pool
+--------------
+For documentation, see: https://vk.com/dev/execute
+
+.. code-block:: python
+
+    from aiovk.pools import AsyncVkExecuteRequestPool
+
+    async with AsyncVkExecuteRequestPool() as pool:
+        response = pool.add_call('users.get', 'YOUR_TOKEN', {'user_ids': 1})
+        response2 = pool.add_call('users.get', 'YOUR_TOKEN', {'user_ids': 2})
+        response3 = pool.add_call('users.get', 'ANOTHER_TOKEN', {'user_ids': 1})
+        response4 = pool.add_call('users.get', 'ANOTHER_TOKEN', {'user_ids': -1})
+
+    >>> print(response.ok)
+    True
+    >>> print(response.result)
+    [{'id': 1, 'first_name': 'Павел', 'last_name': 'Дуров'}]
+    >>> print(response2.result)
+    [{'id': 2, 'first_name': 'Александра', 'last_name': 'Владимирова'}]
+    >>> print(response3.result)
+    [{'id': 1, 'first_name': 'Павел', 'last_name': 'Дуров'}]
+    >>> print(response4.ok)
+    False
+    >>> print(response4.error)
+    {'method': 'users.get', 'error_code': 113, 'error_msg': 'Invalid user id'}
+
+or
+
+.. code-block:: python
+
+    from aiovk.pools import AsyncVkExecuteRequestPool
+
+    pool = AsyncVkExecuteRequestPool()
+    response = pool.add_call('users.get', 'YOUR_TOKEN', {'user_ids': 1})
+    response2 = pool.add_call('users.get', 'YOUR_TOKEN', {'user_ids': 2})
+    response3 = pool.add_call('users.get', 'ANOTHER_TOKEN', {'user_ids': 1})
+    response4 = pool.add_call('users.get', 'ANOTHER_TOKEN', {'user_ids': -1})
+    await pool.execute()
+    ...

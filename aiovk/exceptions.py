@@ -1,5 +1,4 @@
-import urllib.parse
-from aiovk.utils import get_request_params
+from urllib.parse import urlencode
 
 
 CAPTCHA_IS_NEEDED = 14
@@ -14,7 +13,7 @@ class VkAuthError(VkException):
     def __init__(self, error, description, url='', params=''):
         self.error = error
         self.description = description
-        self.url = "{}?{}".format(url, urllib.parse.urlencode(params))
+        self.url = "{}?{}".format(url, urlencode(params))
 
     def __str__(self):
         return self.description
@@ -39,7 +38,7 @@ class VkAPIError(VkException):
     def __init__(self, error, url):
         self.error_code = error.get('error_code')
         self.error_msg = error.get('error_msg')
-        self.params = get_request_params(error.get('request_params'))
+        self.params = {param['key']: param['value'] for param in error.get('request_params', [])}
         self.url = url
 
 
@@ -47,7 +46,7 @@ class VkLongPollError(VkException):
     def __init__(self, error, description, url='', params=''):
         self.error = error
         self.description = description
-        self.url = "{}?{}".format(url, urllib.parse.urlencode(params))
+        self.url = "{}?{}".format(url, urlencode(params))
 
     def __str__(self):
         return self.description

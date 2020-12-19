@@ -24,12 +24,9 @@ class Request:
 
     async def __call__(self, **method_args):
         timeout = method_args.pop('timeout', None)
+        need_raw_response = method_args.pop('raw_response', False)
         self._method_args = method_args
-        return await self._api._session.send_api_request(
-            self._method_name,
-            method_args,
-            timeout,
-        )
+        return await self._api._session.send_api_request(self._method_name, method_args, timeout, need_raw_response)
 
 
 class LazyAPI:
