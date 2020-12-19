@@ -265,7 +265,7 @@ Real pause could be more ``wait`` time because of need time
 for authorization (if needed), reconnect and etc.
 
 Async execute request pool
---------------
+--------------------------
 For documentation, see: https://vk.com/dev/execute
 
 .. code-block:: python
