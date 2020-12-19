@@ -1,5 +1,4 @@
 import json
-import subprocess
 
 import proxy
 import pytest

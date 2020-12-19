@@ -110,6 +110,8 @@ class BaseLongPoll(ABC):
 
 class UserLongPoll(BaseLongPoll):
     """Implements https://vk.com/dev/using_longpoll"""
+    # False for testing
+    use_https = True
 
     async def _get_long_poll_server(self, need_pts=False):
         response = await self.api('messages.getLongPollServer', need_pts=int(need_pts), timeout=self.timeout)
@@ -117,7 +119,7 @@ class UserLongPoll(BaseLongPoll):
         self.ts = response['ts']
         self.key = response['key']
         # fucking differences between long poll methods in vk api!
-        self.base_url = 'https://{}'.format(response['server'])
+        self.base_url = f'http{"s" if self.use_https else ""}://{response["server"]}'
 
 
 class LongPoll(UserLongPoll):
