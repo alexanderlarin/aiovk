@@ -7,6 +7,9 @@ from setuptools import setup, find_packages
 with open('README.rst', 'r') as f:
     readme = f.read()
 
+with open('requirements.txt') as f:
+    requirements = list(map(lambda x: x.strip(), f.readlines()))
+
 with codecs.open(os.path.join(os.path.abspath(os.path.dirname(
         __file__)), 'aiovk', '__init__.py'), 'r', 'latin1') as fp:
     try:
@@ -27,15 +30,16 @@ setup(
     long_description=readme,
 
     packages=find_packages(),
-    install_requires='aiohttp>=3.2.0',
+    install_requires=requirements,
 
     license='MIT License',
     classifiers=[
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords='vk.com api vk wrappper asyncio',
