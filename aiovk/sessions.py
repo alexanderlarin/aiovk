@@ -42,7 +42,7 @@ class BaseSession(ABC):
 class TokenSession(BaseSession):
     """Implements simple session that uses existed token for work"""
 
-    API_VERSION = '5.74'
+    API_VERSION = '5.131'
     REQUEST_URL = 'https://api.vk.com/method/'
 
     def __init__(self, access_token: str = None, timeout: int = 10, driver=None):

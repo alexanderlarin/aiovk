@@ -5,6 +5,7 @@ from typing import Union, Optional
 from aiovk import API
 from aiovk.api import LazyAPI
 from aiovk.exceptions import VkLongPollError
+from vk_api.longpoll import Event
 
 
 class BaseLongPoll(ABC):
@@ -97,6 +98,7 @@ class BaseLongPoll(ABC):
         while True:
             response = await self.wait()
             for event in response['updates']:
+                event = Event(event)
                 yield event
 
     async def get_pts(self, need_ts=False):
