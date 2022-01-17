@@ -1,4 +1,5 @@
 import os
+import unittest
 from unittest import IsolatedAsyncioTestCase
 
 # from dotenv import load_dotenv
@@ -13,6 +14,7 @@ token2 = os.getenv('TEST_TOKEN_2')
 
 
 # TODO need refactoring
+@unittest.skip
 class ExecutePoolTestCase(IsolatedAsyncioTestCase):
     async def test_one_call_per_request(self):
         async with AsyncVkExecuteRequestPool() as pool:
