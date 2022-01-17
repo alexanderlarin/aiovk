@@ -1,3 +1,4 @@
+import re
 import html.parser
 import urllib.parse
 
@@ -84,3 +85,16 @@ class AccessPageParser(html.parser.HTMLParser):
             for name, value in attrs:
                 if name == 'action':
                     self.url = value
+
+
+class AuthRedirectPageParser(html.parser.HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.location = ''
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'meta':
+            attrs = dict(attrs)
+            if attrs.get('http-equiv') == 'refresh':
+                content = attrs['content']
+                self.location = re.findall(r'URL=(.*)$', content)[0]

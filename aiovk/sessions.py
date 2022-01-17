@@ -3,12 +3,10 @@ from abc import ABC, abstractmethod
 from typing import Tuple
 from urllib.parse import parse_qsl
 
-from yarl import URL
-
 from aiovk.drivers import HttpDriver
 from aiovk.exceptions import AUTHORIZATION_FAILED, CAPTCHA_IS_NEEDED, VkAPIError, VkAuthError, VkCaptchaNeeded, \
     VkTwoFactorCodeNeeded
-from aiovk.parser import AccessPageParser, AuthPageParser, TwoFactorCodePageParser
+from aiovk.parser import AccessPageParser, AuthPageParser, TwoFactorCodePageParser, AuthRedirectPageParser
 
 
 class BaseSession(ABC):
@@ -171,6 +169,9 @@ class ImplicitSession(TokenSession):
             if url.path == '/authorize' and '__q_hash' in url.query:
                 # Give rights for app
                 url, html = await self._process_access_form(html)
+            if url.path == '/auth_redirect':
+                # Process client-side auth redirect
+                url, html = await self._process_auth_redirect_page(html)
             if url.path == '/blank.html':
                 # Success
                 parsed_fragments = dict(parse_qsl(url.fragment))
@@ -283,6 +284,22 @@ class ImplicitSession(TokenSession):
         :return confirmation code
         """
         raise VkTwoFactorCodeNeeded()
+
+    async def _process_auth_redirect_page(self, html: str) -> (str, str):
+        """
+        Parse client auth redirect page
+
+        :param html: html page
+        :return: url and  html from redirected page
+        """
+        # Parse page
+        p = AuthRedirectPageParser()
+        p.feed(html)
+        p.close()
+
+        # Send request
+        _, html, redirect_url = await self.driver.get_text(p.location, {})
+        return redirect_url, html
 
 
 class AuthorizationCodeSession(TokenSession):

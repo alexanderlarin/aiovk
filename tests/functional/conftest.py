@@ -25,6 +25,13 @@ async def vk_server(aiohttp_server, user_1_data, valid_token):
         else:
             raise web.HTTPNotImplemented
 
+    @aiohttp_jinja2.template('auth_redirect.jinja2')
+    async def auth_redirect(request):
+        return {
+            'redirect_url': f'http://{request.host}{request.app.router["blank"].url_for()!s}',
+            'access_token': valid_token,
+        }
+
     @aiohttp_jinja2.template('blank.jinja2')
     async def blank(request):
         return
@@ -59,10 +66,10 @@ async def vk_server(aiohttp_server, user_1_data, valid_token):
     async def root(request):
         data = await request.post()
         if data.get('email') == 'login':
-            location = request.app.router['blank'].url_for()
-            raise web.HTTPFound(location=f'{location}#access_token={valid_token}')
+            location = request.app.router['auth_redirect'].url_for()
+            raise web.HTTPFound(location=f'{location}')
         else:
-            response = aiohttp_jinja2.render_template('blank.jinja2', request, None)
+            response = aiohttp_jinja2.render_template('auth_redirect', request, None)
             return response
 
     app = web.Application()
@@ -70,6 +77,7 @@ async def vk_server(aiohttp_server, user_1_data, valid_token):
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader(template_dir))
     app.add_routes([
         web.get('/authorize', authorize),
+        web.get('/auth_redirect', auth_redirect, name='auth_redirect'),
         web.get('/blank.html', blank, name='blank'),
         web.get('/im1774', longpoolwait),
         web.post('/method/users.get.error', user_get_error),
