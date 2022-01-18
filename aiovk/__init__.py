@@ -1,5 +1,5 @@
-__version__ = '4.0.0'
+__version__ = '1.0.0'
 
-from aiovk.sessions import ImplicitSession, TokenSession, AuthorizationCodeSession
-from aiovk.api import API
-from aiovk.longpoll import LongPoll
+from .api import API
+from .sessions import ImplicitSession, TokenSession, AuthorizationCodeSession
+from .longpoll import LongPoll

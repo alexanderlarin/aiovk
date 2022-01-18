@@ -5,10 +5,10 @@ from urllib.parse import parse_qsl
 
 import aiohttp.hdrs
 
-from aiovk.drivers import HttpDriver
-from aiovk.exceptions import AUTHORIZATION_FAILED, CAPTCHA_IS_NEEDED, VkAPIError, VkAuthError, VkCaptchaNeeded, \
+from .drivers import HttpDriver
+from .exceptions import AUTHORIZATION_FAILED, CAPTCHA_IS_NEEDED, VkAPIError, VkAuthError, VkCaptchaNeeded, \
     VkTwoFactorCodeNeeded
-from aiovk.parser import AccessPageParser, AuthPageParser, TwoFactorCodePageParser, AuthRedirectPageParser
+from .parser import AccessPageParser, AuthPageParser, TwoFactorCodePageParser, AuthRedirectPageParser
 
 
 class BaseSession(ABC):

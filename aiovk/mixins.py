@@ -1,5 +1,5 @@
-from aiovk.drivers import BaseDriver
-from aiovk.shaping import TaskQueue, wait_free_slot
+from .drivers import BaseDriver
+from .shaping import TaskQueue, wait_free_slot
 
 
 class LimitRateDriverMixin(BaseDriver):

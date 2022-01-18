@@ -2,9 +2,9 @@ import json
 from abc import ABC, abstractmethod
 from typing import Union, Optional
 
-from aiovk import API
-from aiovk.api import LazyAPI
-from aiovk.exceptions import VkLongPollError
+from . import API
+from .api import LazyAPI
+from .exceptions import VkLongPollError
 
 
 class BaseLongPoll(ABC):

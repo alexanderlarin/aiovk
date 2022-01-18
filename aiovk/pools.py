@@ -4,8 +4,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import List, Dict, Optional
 
-from aiovk import TokenSession, API
-from aiovk.exceptions import VkAuthError
+from . import TokenSession, API
+from .exceptions import VkAuthError
 
 
 class AsyncResult:
