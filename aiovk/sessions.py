@@ -3,6 +3,8 @@ from abc import ABC, abstractmethod
 from typing import Tuple
 from urllib.parse import parse_qsl
 
+import aiohttp.hdrs
+
 from aiovk.drivers import HttpDriver
 from aiovk.exceptions import AUTHORIZATION_FAILED, CAPTCHA_IS_NEEDED, VkAPIError, VkAuthError, VkCaptchaNeeded, \
     VkTwoFactorCodeNeeded
@@ -73,7 +75,7 @@ class TokenSession(BaseSession):
             params['v'] = self.API_VERSION
 
         # Send request
-        _, response = await self.driver.post_json(self.REQUEST_URL + method_name, params, timeout)
+        _, response = await self.driver.post_json(self.REQUEST_URL + method_name, params, timeout=timeout)
 
         # Process response
         # Checking the section with errors
@@ -232,7 +234,8 @@ class ImplicitSession(TokenSession):
             form_url = "https://m.vk.com{}".format(form_url)
 
         # Send request
-        _, html, redirect_url = await self.driver.post_text(form_url, form_data)
+        _, html, redirect_url = await self.driver.post_text(
+            form_url, form_data, headers={aiohttp.hdrs.REFERER: 'https://oauth.vk.com/'})
         return redirect_url, html
 
     async def _process_2auth_form(self, html: str) -> (str, str):
@@ -333,7 +336,7 @@ class AuthorizationCodeSession(TokenSession):
             'redirect_uri': self.redirect_uri,
             'code': code
         }
-        _, response = await self.driver.post_json(self.CODE_URL, params, self.timeout)
+        _, response = await self.driver.post_json(self.CODE_URL, params, timeout=self.timeout)
         if 'error' in response:
             raise VkAuthError(response['error'], response['error_description'], self.CODE_URL, params)
         self.access_token = response['access_token']

@@ -36,4 +36,4 @@ async def test_request_shaper_mixin(period, requests_per_period, rps, lower, upp
     data = await asyncio.gather(*(driver.post_json() for _ in range(rps)))
     await driver.close()
     max_time = max(v[1] for v in data)
-    assert lower < max_time - t0 < upper
+    assert lower <= max_time - t0 <= upper
