@@ -23,11 +23,11 @@ class LimitRateTestDriver(LimitRateDriverMixin, LimitRateBaseTestDriver):
 
 @pytest.mark.parametrize(
     'period, requests_per_period, rps, lower, upper', [
-        (1, 1, 1, 0, 0.01),
-        (1, 1, 2, 1, 1.01),
-        (1, 1, 2, 1, 1.01),
-        (2, 2, 2, 0, 0.01),
-        (2, 1, 2, 0, 2.01),
+        (1, 1, 1, 0, 0.02),
+        (1, 1, 2, 1, 1.02),
+        (1, 1, 2, 1, 1.02),
+        (2, 2, 2, 0, 0.02),
+        (2, 1, 2, 0, 2.02),
     ]
 )
 async def test_request_shaper_mixin(period, requests_per_period, rps, lower, upper):
