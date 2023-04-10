@@ -1,4 +1,4 @@
-__version__ = '1.0.0'
+__version__ = '4.1.0'
 
 from .api import API
 from .sessions import ImplicitSession, TokenSession, AuthorizationCodeSession
